@@ -5,6 +5,32 @@ from tkinter import (
 	N, S, E, W,
 )
 
+root = tk.Tk()
+
+def parse_pdf():
+	print("Parsing PDF")
+	put_text(transcription_window, "This would be the pdf text")
+
+def put_text(text_widget, text):
+	text_widget.insert("1.0", text)
+
+tk.Label(root, text="Filename").grid(row=0, column=0, sticky=W)
+tk.Entry(root, width=50).grid(row=0, column=1, columnspan=5)
+
+transcription_window = tk.Text(root, width=50, height=20)
+transcription_window.grid(row=1, column=0, columnspan=6, sticky=(N, W, E))
+transcription_window.insert("1.0", "Press the 'Parse' button to get file contents")
+
+quickedit_window = tk.Text(root, height=10)
+quickedit_window.grid(row=2, column=0, columnspan=3, rowspan=2, sticky=(S, W))
+quickedit_window.insert("1.0", "Quick edits go here")
+
+tk.Button(root, text="Parse", command=parse_pdf).grid(row=2, column=5)
+tk.Button(root, text="Save").grid(row=3, column=5)
+
+root.mainloop()
+
+'''
 class Parsing_Editing_Window(ttk.Frame):
 	def __init__(self, parent, *args, **kwargs):
 		ttk.Frame.__init__(self, parent, *args, **kwargs)
@@ -24,28 +50,8 @@ class Parsing_Editing_Window(ttk.Frame):
 		self.columnconfigure(0, weight=1)
 		self.rowconfigure(0, weight=1)
 
-    
 root = tk.Tk()
 root.title("Document Analyser")
 Parsing_Editing_Window(root)
 root.mainloop()
-
-'''
-feet = StringVar()
-meters = StringVar()
-
-feet_entry = ttk.Entry(mainframe, width=7, textvariable=feet)
-feet_entry.grid(column=2, row=1, sticky=(W, E))
-
-ttk.Label(mainframe, textvariable=meters).grid(column=2, row=2, sticky=(W, E))
-ttk.Button(mainframe, text="Calculate", command=calculate).grid(column=3, row=3, sticky=W)
-
-ttk.Label(mainframe, text="feet").grid(column=3, row=1, sticky=W)
-ttk.Label(mainframe, text="is equivalent to").grid(column=1, row=2, sticky=E)
-ttk.Label(mainframe, text="meters").grid(column=3, row=2, sticky=W)
-
-for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
-
-feet_entry.focus()
-root.bind('<Return>', calculate)
 '''
