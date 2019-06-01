@@ -1,5 +1,7 @@
 import tkinter as tk
 
+from pdftest import get_text
+
 # TODO: 
 # Progress bar (file X out of Y)
 # Refresh filenames (user copies more into folder)
@@ -77,7 +79,7 @@ class PDFPage(tk.Frame):
     # Parse the file we are currently at and return its text
     def parse_pdf(self):
         print("Parsing PDF")
-        text = "This would be the pdf text"
+        text = get_text('./Testing/PDF_Files/test_pdf.pdf')
         self.t_window.delete("1.0", "end")
         self.t_window.insert("1.0", text)
 
