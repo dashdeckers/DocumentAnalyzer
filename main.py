@@ -10,8 +10,9 @@ class DocumentAnalyser(tk.Tk):
         self.title("Document Analysis")
         # Persistent data
         self.metadata = {
-            'lang' : None,
-            'n_cats' : None,
+            'language' : None,
+            'n_categories' : None,
+            'project_name' : None,
         }
         # Switch frame to the start page
         self._frame = None

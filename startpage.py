@@ -147,6 +147,7 @@ class StartPage(tk.Frame):
     # Open an existing project folder
     def open_project_folder(self, name):
         print("Opening an existing project: ", name)
+        self.master.metadata['project_name'] = name
         if self.clear_history.get():
             print("-- Clearing history")
         if self.clear_cats.get():
@@ -171,6 +172,9 @@ class StartPage(tk.Frame):
                 file.write(f"Name: {name}\n")
                 file.write(f"N_Cats: {self.num_cats}\n")
                 file.write(f"Language: {self.language}\n")
+            self.master.metadata['project_name'] = name
+            self.master.metadata['n_categories'] = self.num_cats
+            self.master.metadata['language'] = self.language
         except FileExistsError:
             self.set_error_message("Folder exists")
             return False

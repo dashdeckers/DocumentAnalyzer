@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 
 from pdftest import get_text
 
@@ -8,6 +9,8 @@ from pdftest import get_text
 #   OR add files via GUI
 # Menu bar instead of buttons?
 
+# Current filename is always self.filenames[0]
+# that means when going to next file, delete that entry
 
 class PDFPage(tk.Frame):
     def __init__(self, master):
@@ -51,7 +54,11 @@ class PDFPage(tk.Frame):
 
         back_b = tk.Button(self, text="Back",
                            command=lambda: self.master.switch_frame(StartPage))
-        back_b.grid(row=5, column=5)
+        back_b.grid(row=6, column=5)
+
+        spell_b = tk.Button(self, text="Spellcheck",
+                            command=self.spellcheck)
+        spell_b.grid(row=7, column=5)
 
     # Create the quickedit listbox and fill with default edits
     def create_quickedit_window(self):
@@ -63,7 +70,7 @@ class PDFPage(tk.Frame):
             self.qe_window.insert("end", element)
         self.qe_window.bind('<<ListboxSelect>>', self.list_box_selected)
         self.qe_window.bind('<Double-1>', self.list_box_doubleclicked)
-        self.qe_window.grid(row=2, column=0, columnspan=3, rowspan=4, sticky="sew")
+        self.qe_window.grid(row=2, column=0, columnspan=3, rowspan=5, sticky="sew")
 
     # Create the transcription window and fill with default text
     def create_transcription_window(self):
@@ -71,6 +78,23 @@ class PDFPage(tk.Frame):
         self.t_window = tk.Text(self, width=50, height=20)
         self.t_window.grid(row=1, column=0, columnspan=6, sticky="new")
         self.t_window.insert("1.0", default_text)
+        self.t_window.tag_configure("misspelled", foreground="red", underline=True)
+        # TODO: Get a proper, os independent spellcheck dict
+        self._dict = open("/usr/share/dict/words").read().split("\n")
+
+    # Underlines all words in the text box that are not in the dictionary
+    def spellcheck(self):
+        text = self.t_window.get("1.0", "end").split()
+        index = "1.0"
+
+        print(text)
+
+        for word in text:
+            index = self.t_window.search(word, index, "end")
+            if word in self._dict:
+                self.t_window.tag_remove("misspelled", index, f"{index}+{len(word)}c")
+            else:
+                self.t_window.tag_add("misspelled", index, f"{index}+{len(word)}c")
 
     # Get all the filenames from the scanned pdf folder and remove already parsed
     def get_filenames(self):
@@ -85,7 +109,15 @@ class PDFPage(tk.Frame):
 
     # Save the parsed and edited text from the transcription window to file
     def save_text(self):
-        print("Saving text")
+        try:
+            project_name = self.master.metadata['project_name']
+            filename = self.filenames[0]
+            file_path = os.path.join('.', project_name, "Text_Files", filename + '.txt')
+            with open(file_path, 'w') as file:
+                file.write(self.t_window.get("1.0", "end"))
+            print("Saving text")
+        except FileNotFoundError as e:
+            raise e
 
     # Handle selecting a quick edit
     def list_box_selected(self, event):
