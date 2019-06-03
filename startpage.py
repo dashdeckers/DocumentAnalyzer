@@ -6,11 +6,24 @@ class StartPage(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
 
-        # Define a font for the large create/choose project labels
+        # Define some fonts for the labels
         self.big_font = tkFont.Font(size=18, family="Times New Roman")
+        self.small_font = tkFont.Font(size=13, family="Times New Roman")
+
+        # Define possible languages to pick from
+        self.language_options = ["English", "Dutch"]
+
+        # Define possible category numbers
+        self.catnum_options = list(range(2, 10))
 
         # Finds existing projects and creates the options for the option menu
         self.create_option_menu()
+
+        # Create next page button
+        self.next_page = tk.Button(self,
+                                   text="Next Page",
+                                   width=10,
+                                   command=self.on_next)
 
         # Create all the options, show one of them
         self.create_new_project_options()
@@ -20,19 +33,11 @@ class StartPage(tk.Frame):
         # When the project selection changes, deal with that
         self.project_selection.trace("w", self.on_option_change)
 
-        # Create next page button
-        next_page = tk.Button(self,
-                              text="Next Page",
-                              width=20,
-                              height=10,
-                              command=self.on_next)
-        next_page.grid(row=4, column=0, columnspan=2, sticky="s", pady=(100, 0))
-
         # Create error / info display
         self.error_text = tk.StringVar(self)
         error_display = tk.Label(self,
                                  textvariable=self.error_text,
-                                 height=20)
+                                 height=10)
         error_display.grid(row=5, column=0, columnspan=2, sticky="s")
         self.set_error_message("Info message")
 
@@ -60,23 +65,57 @@ class StartPage(tk.Frame):
 
     # Create all the options needed to create a new project
     def create_new_project_options(self):
-        # TODO: Missing some options (language and # of cats)
+        # The label and entry field to name the new project
         self.create_project = tk.Label(self,
                                        text="Project name:",
-                                       font=self.big_font,
-                                       width=20, 
+                                       font=self.small_font,
+                                       width=20,
                                        height=2)
         self.project_name = tk.Entry(self, width=25)
+        # The label and drop down menu to choose a language
+        self.choose_language = tk.Label(self,
+                                        text="Language",
+                                        font=self.small_font,
+                                        width=10)
+        self.language_selection = tk.StringVar(self)
+        self.language_selection.set(self.language_options[0])
+        self.language_menu = tk.OptionMenu(self,
+                                           self.language_selection,
+                                           *self.language_options)
+        self.language_menu.config(width=10)
+        # The label and drop down menu to set the number of categories
+        self.choose_catnum = tk.Label(self,
+                                      text="# of Categories",
+                                      font=self.small_font,
+                                      width=15)
+        self.catnum_selection = tk.IntVar(self)
+        self.catnum_selection.set(5)
+        self.catnum_menu = tk.OptionMenu(self,
+                                         self.catnum_selection,
+                                         *self.catnum_options)
+        self.catnum_menu.config(width=10)
 
     # Show the create project options
     def show_new_project_options(self):
         self.create_project.grid(row=1, column=0)
-        self.project_name.grid(row=1, column=1)
+        self.project_name.grid(row=2, column=0)
+
+        self.choose_language.grid(row=3, column=0)
+        self.language_menu.grid(row=4, column=0)
+
+        self.choose_catnum.grid(row=1, column=1)
+        self.catnum_menu.grid(row=2, column=1)
+
+        self.next_page.grid(row=3, column=1, rowspan=2)
 
     # Hide the create project options
     def hide_new_project_options(self):
         self.create_project.grid_remove()
         self.project_name.grid_remove()
+        self.choose_language.grid_remove()
+        self.language_menu.grid_remove()
+        self.choose_catnum.grid_remove()
+        self.catnum_menu.grid_remove()
 
     # Create all the options needed to open an existing project
     def create_existing_project_options(self):
@@ -92,8 +131,9 @@ class StartPage(tk.Frame):
 
     # Show the open existing project options
     def show_existing_project_options(self):
-        self.clear_h.grid(row=2, column=0, columnspan=2)
-        self.clear_c.grid(row=3, column=0, columnspan=2)
+        self.clear_h.grid(row=2, column=0)
+        self.clear_c.grid(row=3, column=0)
+        self.next_page.grid(row=2, column=1, rowspan=2)
 
     # Hide the open existing project options
     def hide_existing_project_options(self):
@@ -157,7 +197,6 @@ class StartPage(tk.Frame):
     # Create a new project folder
     def create_project_folder(self, name):
         # TODO: Make these options
-        self.language = "English"
         self.num_cats = 1
         try:
             print("Creating a new project: ", name)
@@ -171,10 +210,10 @@ class StartPage(tk.Frame):
             with open(os.path.join(pdir, 'project_info'), 'w') as file:
                 file.write(f"Name: {name}\n")
                 file.write(f"N_Cats: {self.num_cats}\n")
-                file.write(f"Language: {self.language}\n")
+                file.write(f"Language: {self.language_selection}\n")
             self.master.metadata['project_name'] = name
             self.master.metadata['n_categories'] = self.num_cats
-            self.master.metadata['language'] = self.language
+            self.master.metadata['language'] = self.language_selection
         except FileExistsError:
             self.set_error_message("Folder exists")
             return False

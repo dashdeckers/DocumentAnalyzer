@@ -5,7 +5,7 @@ class DocumentAnalyser(tk.Tk):
         from startpage import StartPage
         tk.Tk.__init__(self)
         # Basic configs
-        self.minsize(width=530, height=550)
+        self.minsize(width=530, height=350)
         self.maxsize(width=600, height=700)
         self.title("Document Analysis")
         # Persistent data
