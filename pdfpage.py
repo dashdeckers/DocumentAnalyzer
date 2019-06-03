@@ -36,29 +36,41 @@ class PDFPage(tk.Frame):
     # Create the buttons
     def create_buttons(self):
         from startpage import StartPage
+        # Parse the scanned pdf corresponding to current filename and display text
         parse_b = tk.Button(self, text="Parse",
+                            width=10,
                             command=self.parse_pdf)
         parse_b.grid(row=2, column=5)
-
-        add_b = tk.Button(self, text="Add Quick-edit",
-                          command=self.add_quickedit)
-        add_b.grid(row=3, column=5)
-
-        rem_b = tk.Button(self, text="Remove Quick-edit",
-                          command=self.remove_quickedit)
-        rem_b.grid(row=4, column=5)
-
+        # Save the text to a text file with the same filename in the right folder
         save_b = tk.Button(self, text="Save",
+                           width=10,
                            command=self.save_text)
-        save_b.grid(row=5, column=5)
-
-        back_b = tk.Button(self, text="Back",
-                           command=lambda: self.master.switch_frame(StartPage))
-        back_b.grid(row=6, column=5)
-
+        save_b.grid(row=3, column=5)
+        # Run the spell checker to highlight misspellt words
         spell_b = tk.Button(self, text="Spellcheck",
+                            width=10,
                             command=self.spellcheck)
-        spell_b.grid(row=7, column=5)
+        spell_b.grid(row=4, column=5)
+        # Go back to the start page
+        back_b = tk.Button(self, text="Back",
+                           width=10,
+                           command=lambda: self.master.switch_frame(StartPage))
+        back_b.grid(row=5, column=5)
+        # Go to the next page
+        next_b = tk.Button(self, text="Next Page",
+                           width=10,
+                           command=lambda:print("Nope"))
+        next_b.grid(row=6, column=5)
+        # Add a quick edit command to list
+        add_b = tk.Button(self, text="Add Quick-edit",
+                          width=15,
+                          command=self.add_quickedit)
+        add_b.grid(row=6, column=0)
+        # Remove the selected quick edit command from list
+        rem_b = tk.Button(self, text="Remove Quick-edit",
+                          width=15,
+                          command=self.remove_quickedit)
+        rem_b.grid(row=6, column=1)
 
     # Create the quickedit listbox and fill with default edits
     def create_quickedit_window(self):
@@ -70,7 +82,7 @@ class PDFPage(tk.Frame):
             self.qe_window.insert("end", element)
         self.qe_window.bind('<<ListboxSelect>>', self.list_box_selected)
         self.qe_window.bind('<Double-1>', self.list_box_doubleclicked)
-        self.qe_window.grid(row=2, column=0, columnspan=3, rowspan=5, sticky="sew")
+        self.qe_window.grid(row=2, column=0, columnspan=3, rowspan=4, sticky="sew")
 
     # Create the transcription window and fill with default text
     def create_transcription_window(self):
