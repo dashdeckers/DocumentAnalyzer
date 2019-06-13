@@ -6,7 +6,7 @@ class DocumentAnalyser(tk.Tk):
         tk.Tk.__init__(self)
         # Basic configs
         self.minsize(width=530, height=350)
-        self.maxsize(width=600, height=700)
+        self.maxsize(width=800, height=1000)
         self.title("Document Analysis")
         # Persistent data
         self.metadata = {

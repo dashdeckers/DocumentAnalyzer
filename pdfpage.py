@@ -33,6 +33,18 @@ class PDFPage(tk.Frame):
         # Create the parse pdf, remove/add quick edit and go back buttons
         self.create_buttons()
 
+        # Configure rows and cols for resizing
+        self.configure_grid()
+
+    # Give all rows and cols equal weights so that they resize nicely
+    # TODO: Not working correctly, resizing doesn't resize the widgets
+    def configure_grid(self):
+        print(self.grid_size())
+        for row_num in range(self.grid_size()[1]):
+            self.rowconfigure(row_num, weight=1)
+        for col_num in range(self.grid_size()[0]):
+            self.columnconfigure(col_num, weight=1)
+
     # Create the buttons
     def create_buttons(self):
         from startpage import StartPage
