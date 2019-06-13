@@ -196,23 +196,21 @@ class StartPage(tk.Frame):
 
     # Create a new project folder
     def create_project_folder(self, name):
-        # TODO: Make these options
-        self.num_cats = 1
         try:
             print("Creating a new project: ", name)
             pdir = os.path.join('.', name)
             os.mkdir(pdir)
             os.mkdir(os.path.join(pdir, 'PDF_Files'))
             os.mkdir(os.path.join(pdir, 'Text_Files'))
-            for cat_num in range(1, self.num_cats + 1):
+            for cat_num in range(1, self.catnum_selection.get() + 1):
                 with open(os.path.join(pdir, f'cat{cat_num}.txt'), 'w') as file:
                     file.write("")
             with open(os.path.join(pdir, 'project_info'), 'w') as file:
                 file.write(f"Name: {name}\n")
-                file.write(f"N_Cats: {self.num_cats}\n")
+                file.write(f"N_Cats: {self.catnum_selection}\n")
                 file.write(f"Language: {self.language_selection}\n")
             self.master.metadata['project_name'] = name
-            self.master.metadata['n_categories'] = self.num_cats
+            self.master.metadata['n_categories'] = self.catnum_selection
             self.master.metadata['language'] = self.language_selection
         except FileExistsError:
             self.set_error_message("Folder exists")
