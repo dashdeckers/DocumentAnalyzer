@@ -1,18 +1,81 @@
 import tkinter as tk
 import os
 
-from pdftest import get_text
+from pdftest import Parser
 
 # TODO: 
-# Progress bar (file X out of Y)
-# Refresh filenames (user copies more into folder)
-#   OR add files via GUI
-# Menu bar instead of buttons?
-
-# Current filename is always self.filenames[0]
-# that means when going to next file, delete that entry
+# highlighting of the line we are on
+# scrollbar
+# function to actually edit the word (all occurances)
 
 class PDFPage(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        from startpage import StartPage
+        w = "aensations"
+        self.initialize_parser(w)
+
+        name = tk.Label(self, text="filename")
+        name.grid(row=0, column=0, sticky="w")
+
+        page = tk.Label(self, text="1/10")
+        page.grid(row=0, column=7, sticky="e")
+
+        self.text = tk.Text(self, width=60, height=15, wrap="word")
+        self.text.tag_configure("misspelled", foreground="red", underline=True)
+        self.text.insert("1.0", self.p.text)
+        self.text.grid(row=1, column=0, columnspan=8, sticky="we")
+        self.spellcheck()
+
+        word = tk.Text(self, width=13, height=1)
+        word.insert("1.0", self.c[3])
+        word.grid(row=2, column=3, columnspan=2)
+
+        context1 = tk.Label(self, text=self.c[:3])
+        context1.grid(row=2, column=0, columnspan=3)
+
+        context2 = tk.Label(self, text=self.c[4:])
+        context2.grid(row=2, column=5, columnspan=3)
+
+        options = list(self.p.show_corrections(w))
+        correction = tk.StringVar(self, options[0])
+        options_menu = tk.OptionMenu(self,
+                                     correction,
+                                     *options)
+        options_menu.grid(row=3, column=3, columnspan=2)
+        options_menu.config(width=13)
+
+        b1 = tk.Button(self, text="Discard & Reparse", width=13)
+        b1.grid(row=4, column=0, columnspan=2)
+
+        b2 = tk.Button(self, text="Save & Next", width=13)
+        b2.grid(row=4, column=2, columnspan=2)
+
+        b3 = tk.Button(self, text="Previous Page", width=13,
+                       command=lambda: self.master.switch_frame(StartPage))
+        b3.grid(row=4, column=4, columnspan=2)
+
+        b4 = tk.Button(self, text="Next Page", width=13,
+                       command=lambda:print("Nope"))
+        b4.grid(row=4, column=6, columnspan=2)
+
+    def initialize_parser(self, word):
+        self.p = Parser()
+        self.p.extract_text()
+        self.p.clean_text()
+        self.c = self.p.show_context(word)
+
+    # Underlines all words in the text box that are not in the dictionary
+    def spellcheck(self):
+        index = "1.0"
+        for word in self.p.tokens:
+            index = self.text.search(word, index, "end")
+            if word in self.p.spell._word_frequency._dictionary.keys():
+                self.text.tag_remove("misspelled", index, f"{index}+{len(word)}c")
+            else:
+                self.text.tag_add("misspelled", index, f"{index}+{len(word)}c")
+
+class _PDFPage(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
 
@@ -32,18 +95,6 @@ class PDFPage(tk.Frame):
 
         # Create the parse pdf, remove/add quick edit and go back buttons
         self.create_buttons()
-
-        # Configure rows and cols for resizing
-        self.configure_grid()
-
-    # Give all rows and cols equal weights so that they resize nicely
-    # TODO: Not working correctly, resizing doesn't resize the widgets
-    def configure_grid(self):
-        print(self.grid_size())
-        for row_num in range(self.grid_size()[1]):
-            self.rowconfigure(row_num, weight=1)
-        for col_num in range(self.grid_size()[0]):
-            self.columnconfigure(col_num, weight=1)
 
     # Create the buttons
     def create_buttons(self):

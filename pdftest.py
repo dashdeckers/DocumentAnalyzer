@@ -71,14 +71,14 @@ def get_solution():
 
     text = ""
     with open(solution_path, 'r') as file:
-        for line in file
+        for line in file:
             text += file.readline()
     return text
 
 class Parser:
     def __init__(self, language='en'):
         if language not in ['en']:
-            # Handle this:
+            # TODO: Handle this:
             # Check if language exists as file
             # Make and get the dictionary of the language
             # Make Spellchecker
@@ -144,7 +144,7 @@ class Parser:
 
     # Find the words in the text that are not in the dictionary
     def spellcheck(self):
-        self.errors = self.spell.unknown(self.text)
+        self.errors = self.spell.unknown(self.tokens)
         return self.errors
 
     # Show the context of the first (or all) occurance of a word in the text
