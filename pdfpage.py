@@ -1,51 +1,124 @@
 import tkinter as tk
 import os
 
-from pdftest import Parser
+from parser import Parser
 
 # TODO: 
 # highlighting of the line we are on
-# scrollbar
-# function to actually edit the word (all occurances)
+# optimize
+# next file functionality
 
 class PDFPage(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
-        from startpage import StartPage
-        w = "aensations"
-        self.initialize_parser(w)
 
+        self.initialize_parser()
+
+        self.create_header_row()
+        self.create_text_area()
+        self.spellcheck()
+
+        self.create_edit_row()
+        self.create_button_row()
+        self.next_error()
+
+    def initialize_parser(self):
+        self.p = Parser()
+        self.p.extract_text()
+        self.p.clean_text()
+        self.errors = self.p.spellcheck()
+
+    def reparse(self):
+        self.initialize_parser()
+        self.text.insert("1.0", " ".join(self.p.tokens))
+
+    # Underlines all spelling mistakes in text
+    def spellcheck(self):
+        index = "1.0"
+        for word in self.errors:
+            index = self.text.search(word, "1.0", "end") # "1.0" --> index
+            # if word in self.p.spell._word_frequency._dictionary.keys():
+            #     self.text.tag_remove("misspelled", index, f"{index}+{len(word)}c")
+            # else:
+            self.text.tag_add("misspelled", index, f"{index}+{len(word)}c")
+
+    def create_text_area(self):
+        self.text = tk.Text(self, width=60, height=15, wrap="word")
+        self.text.tag_configure("misspelled", foreground="red", underline=True)
+        self.text.insert("1.0", " ".join(self.p.tokens))
+        self.text.grid(row=1, column=0, columnspan=8, sticky="we")
+
+        scroll = tk.Scrollbar(self)
+        scroll.config(command=self.text.yview)
+        self.text.config(yscrollcommand=scroll.set)
+        scroll.grid(row=1, column=8, sticky="ns")
+
+    def create_header_row(self):
         name = tk.Label(self, text="filename")
         name.grid(row=0, column=0, sticky="w")
 
         page = tk.Label(self, text="1/10")
         page.grid(row=0, column=7, sticky="e")
 
-        self.text = tk.Text(self, width=60, height=15, wrap="word")
-        self.text.tag_configure("misspelled", foreground="red", underline=True)
-        self.text.insert("1.0", self.p.text)
-        self.text.grid(row=1, column=0, columnspan=8, sticky="we")
+    def create_edit_row(self):
+        self.word = tk.Text(self, width=13, height=1)
+        self.word.grid(row=2, column=3, columnspan=2)
+
+        self.context1 = tk.Label(self)
+        self.context1.grid(row=2, column=0, columnspan=3)
+
+        self.context2 = tk.Label(self)
+        self.context2.grid(row=2, column=5, columnspan=3)
+
+        self.options = ["None"]
+        self.correction = tk.StringVar(self, "Pick an option")
+        self.options_menu = tk.OptionMenu(self,
+                                     self.correction,
+                                     *self.options)
+        self.correction.trace("w", self.apply_correction)
+        self.options_menu.grid(row=3, column=3, columnspan=2)
+        self.options_menu.config(width=13)
+
+    def next_error(self):
+        if not self.errors:
+            self.word.delete("1.0", "end")
+            self.context1['text'] = ""
+            self.context2['text'] = ""
+            self.correction.set("Done!")
+            self.options_menu['menu'].delete(0, 'end')
+
+        else:
+            self.err = self.errors.pop()
+            self.cont = self.p.show_context(self.err)
+
+            self.word.delete("1.0", "end")
+            self.word.insert("1.0", self.cont[3])
+            self.context1['text'] = self.cont[:3]
+            self.context2['text'] = self.cont[4:]
+
+            self.options = list(self.p.show_corrections(self.err))
+            if len(self.options) > 5:
+                self.options = self.options[:5]
+            self.correction.set("Pick an option")
+
+            menu = self.options_menu['menu']
+            menu.delete(0, 'end')
+            for op in self.options:
+                menu.add_command(label=op,
+                                 command=tk._setit(self.correction, op))
+
+    def apply_correction(self, *args):
+        self.p.correct_word(self.err, self.correction.get())
+        self.text.delete("1.0", "end")
+        self.text.insert("1.0", " ".join(self.p.tokens))
         self.spellcheck()
+        self.next_error()
 
-        word = tk.Text(self, width=13, height=1)
-        word.insert("1.0", self.c[3])
-        word.grid(row=2, column=3, columnspan=2)
+    def create_button_row(self):
+        from startpage import StartPage
 
-        context1 = tk.Label(self, text=self.c[:3])
-        context1.grid(row=2, column=0, columnspan=3)
-
-        context2 = tk.Label(self, text=self.c[4:])
-        context2.grid(row=2, column=5, columnspan=3)
-
-        options = list(self.p.show_corrections(w))
-        correction = tk.StringVar(self, options[0])
-        options_menu = tk.OptionMenu(self,
-                                     correction,
-                                     *options)
-        options_menu.grid(row=3, column=3, columnspan=2)
-        options_menu.config(width=13)
-
-        b1 = tk.Button(self, text="Discard & Reparse", width=13)
+        b1 = tk.Button(self, text="Discard & Reparse", width=13,
+                       command=lambda: self.reparse())
         b1.grid(row=4, column=0, columnspan=2)
 
         b2 = tk.Button(self, text="Save & Next", width=13)
@@ -56,24 +129,9 @@ class PDFPage(tk.Frame):
         b3.grid(row=4, column=4, columnspan=2)
 
         b4 = tk.Button(self, text="Next Page", width=13,
-                       command=lambda:print("Nope"))
+                       command=lambda: print("Nope"))
         b4.grid(row=4, column=6, columnspan=2)
 
-    def initialize_parser(self, word):
-        self.p = Parser()
-        self.p.extract_text()
-        self.p.clean_text()
-        self.c = self.p.show_context(word)
-
-    # Underlines all words in the text box that are not in the dictionary
-    def spellcheck(self):
-        index = "1.0"
-        for word in self.p.tokens:
-            index = self.text.search(word, index, "end")
-            if word in self.p.spell._word_frequency._dictionary.keys():
-                self.text.tag_remove("misspelled", index, f"{index}+{len(word)}c")
-            else:
-                self.text.tag_add("misspelled", index, f"{index}+{len(word)}c")
 
 class _PDFPage(tk.Frame):
     def __init__(self, master):
