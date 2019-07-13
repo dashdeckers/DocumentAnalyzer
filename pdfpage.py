@@ -7,6 +7,8 @@ from parser import Parser
 # highlighting of the line we are on
 # optimize
 # next file functionality
+# custom correction + enter button (only when focus is on word text)
+# scroll to position
 
 class PDFPage(tk.Frame):
     def __init__(self, master):
@@ -23,7 +25,16 @@ class PDFPage(tk.Frame):
         self.next_error()
 
     def initialize_parser(self):
-        self.p = Parser()
+        lang_map = {
+            'English'    : 'en',
+            'German'     : 'de',
+            'Dutch'      : 'nl',
+            'Spanish'    : 'es',
+            'French'     : 'fr',
+            'Portuguese' : 'pt',
+        }
+        print(self.master.metadata['language'])
+        self.p = Parser(lang_map[self.master.metadata['language']])
         self.p.extract_text()
         self.p.clean_text()
         self.errors = self.p.spellcheck()
@@ -40,11 +51,14 @@ class PDFPage(tk.Frame):
             # if word in self.p.spell._word_frequency._dictionary.keys():
             #     self.text.tag_remove("misspelled", index, f"{index}+{len(word)}c")
             # else:
+            if index == "":
+                index = "1.0"
             self.text.tag_add("misspelled", index, f"{index}+{len(word)}c")
 
     def create_text_area(self):
         self.text = tk.Text(self, width=60, height=15, wrap="word")
         self.text.tag_configure("misspelled", foreground="red", underline=True)
+        self.text.tag_configure("current_line", background="salmon")
         self.text.insert("1.0", " ".join(self.p.tokens))
         self.text.grid(row=1, column=0, columnspan=8, sticky="we")
 
@@ -107,6 +121,9 @@ class PDFPage(tk.Frame):
                 menu.add_command(label=op,
                                  command=tk._setit(self.correction, op))
 
+            index = self.text.search(self.err, "1.0", "end")
+            self.text.tag_add("current_line", index, f"{index}+{len(self.err)}c")
+
     def apply_correction(self, *args):
         self.p.correct_word(self.err, self.correction.get())
         self.text.delete("1.0", "end")
@@ -131,6 +148,22 @@ class PDFPage(tk.Frame):
         b4 = tk.Button(self, text="Next Page", width=13,
                        command=lambda: print("Nope"))
         b4.grid(row=4, column=6, columnspan=2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class _PDFPage(tk.Frame):

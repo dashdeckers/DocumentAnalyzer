@@ -77,17 +77,14 @@ def get_solution():
 
 class Parser:
     def __init__(self, language='en'):
-        if language not in ['en']:
-            # TODO: Handle this:
-            # Check if language exists as file
-            # Make and get the dictionary of the language
-            # Make Spellchecker
-            print("Other languages not yet implemented")
-            return
-            path_to_dict = ""
-            self.spell = Spellchecker(local_dictionary=path_to_dict)
-        else:
+        if language in ['en', 'de', 'es', 'pt', 'fr']:
             self.spell = SpellChecker(language=language)
+        elif len(language) == 2:
+            path_to_dict_text = os.path.join(".", f"{language}_full.txt")
+            path_to_dict = self.create_dictionary(path_to_dict_text)
+            self.spell = SpellChecker(local_dictionary=path_to_dict)
+        else:
+            print("Language must be a valid two-letter language abbreviation")
 
         self.text = None
         self.tokens = None
@@ -100,7 +97,7 @@ class Parser:
     This will create a .dict file which can be loaded by the spell-
     checker. It also returns the path to the .dict file
     '''
-    def create_dictionary(self, filename, path="./"):
+    def create_dictionary(self, filename, path="."):
         if not filename.endswith('.txt'):
             print("Must be a text file")
             return
@@ -178,7 +175,7 @@ class Parser:
     def show_corrections(self, word):
         options = self.spell.candidates(word)
         for idx, word in enumerate(options):
-            # TODO: Show the options in the order of probability
+            # TODO: Show the options in the order of probability / distance
             print(f"[{idx}]\t{word}")
             if idx == 6:
                 break
@@ -187,12 +184,14 @@ class Parser:
 
     # Replace all occurances of a word with the correction
     def correct_word(self, word, correction):
+        # TODO: add option to correct all or only one occurance of the word
         if not self.tokens:
             print("Extract and clean the text first before correcting!")
+        if correction == "Pick an option":
+            print("Something went wrong, correction is definitely incorrect")
+            return
         self.tokens[:] = [correction if w == word else w for w in self.tokens]
 
 
-# TODO: write text to file to be able to wdiff with solution
-# TODO: write preprocessed images to file to see how clear they are
 if __name__ == '__main__':
     spell = SpellChecker()

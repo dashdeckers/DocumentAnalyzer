@@ -11,7 +11,8 @@ class StartPage(tk.Frame):
         self.small_font = tkFont.Font(size=13, family="Times New Roman")
 
         # Define possible languages to pick from
-        self.language_options = ["English", "Dutch"]
+        self.language_options = ["English", "Dutch", "German",\
+                                 "Spanish", "French", "Portuguese"]
 
         # Define possible category numbers
         self.catnum_options = list(range(2, 10))
@@ -187,7 +188,26 @@ class StartPage(tk.Frame):
     # Open an existing project folder
     def open_project_folder(self, name):
         print("Opening an existing project: ", name)
-        self.master.metadata['project_name'] = name
+        pdir = os.path.join('.', name)
+
+        name = cats = lang = False
+        with open(os.path.join(pdir, 'project_info'), 'r') as file:
+            for row in file:
+                r = row.split()
+                print(r)
+                if r[0] == "Name:":
+                    self.master.metadata['project_name'] = r[1]
+                    name = True
+                if r[0] == "N_Cats:":
+                    self.master.metadata['n_categories'] = r[1]
+                    cats = True
+                if r[0] == "Language:":
+                    self.master.metadata['language'] = r[1]
+                    lang = True
+
+        if not (name or cats or lang):
+            print("The project info file is corrupt!")
+
         if self.clear_history.get():
             print("-- Clearing history")
         if self.clear_cats.get():
@@ -207,11 +227,11 @@ class StartPage(tk.Frame):
                     file.write("")
             with open(os.path.join(pdir, 'project_info'), 'w') as file:
                 file.write(f"Name: {name}\n")
-                file.write(f"N_Cats: {self.catnum_selection}\n")
-                file.write(f"Language: {self.language_selection}\n")
+                file.write(f"N_Cats: {self.catnum_selection.get()}\n")
+                file.write(f"Language: {self.language_selection.get()}\n")
             self.master.metadata['project_name'] = name
-            self.master.metadata['n_categories'] = self.catnum_selection
-            self.master.metadata['language'] = self.language_selection
+            self.master.metadata['n_categories'] = self.catnum_selection.get()
+            self.master.metadata['language'] = self.language_selection.get()
         except FileExistsError:
             self.set_error_message("Folder exists")
             return False
