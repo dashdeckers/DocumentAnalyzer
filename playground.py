@@ -7,11 +7,20 @@ import tkinter as tk
 # TODO:
 
 # Pop up message on close (unsaved progress)
+# Spellchecker language setting function (replace self.spell?)
+# Destroy corrections menu on 'unfocus'
+# Spellcheck tagging (highlighting)
+# Pop up box to create project with user input (spinbox for cat num selection?)
 
 # Make sure you can only access the right menu items in the right tab with
 # print(self.notebook.tab(self.notebook.select(), 'text'))
 # print(self.notebook.index(self.notebook.select()))
 
+
+# Classify:
+# Show previous word, current word, next word (show how many words to go)
+# Show the categories and the keyboard shortcuts (tree view? like file explorer)
+# Show results (how many counts per cat so far) (also tree view?)
 
 
 
@@ -33,6 +42,29 @@ import tkinter as tk
 # Creates a folder following user specifications
 # User adds one or more folders full of pdfs via the menu
 # Follow the flow
+
+
+wordlists = {
+	'category one' : ['word1.1', 'word1.2', 'word1.3'],
+	'category two' : ['word2.1', 'word2.2', 'word2.3'],
+}
+
+filehistory = ['file1', 'file2', 'file3']
+
+cat_infotext = '''These are the words that belong to the corresponding categories.
+If you want to edit them directly: Then save the project, close the
+program and open the corresponding text file located within the
+project folder. This text file can be edited to add multiple words
+to the wordlist directly, but make sure you put only one word per
+line'''
+
+filehist_infotext = '''This is the list of filenames that have already been extracted,
+that means the text has been retrieved from the file, possibly edited and corrected,
+and then saved. These filenames will be excluded from the extract step. To re-do
+a file that is on this list: Close the program, open the file history text file
+located within the project folder, remove that filename from the list, and then
+save the file.
+'''
 
 class Notebook(tk.Tk):
 	def __init__(self):
@@ -64,8 +96,8 @@ class Notebook(tk.Tk):
 		self.menu.add_cascade(label='Edit', menu=self.menu_edits)
 
 		# Extract text tab
-		self.filename_var = tk.StringVar(self, 'filename')
-		self.filenumber_var = tk.StringVar(self, '1/10') # should maybe be blank?
+		self.filename_var = tk.StringVar(self, value='filename')
+		self.filenumber_var = tk.StringVar(self, value='1/10') # should maybe be blank?
 		self.extract = ttk.Frame(self.notebook)
 		self.extract_filefield = ttk.Frame(self.extract)
 		self.extract_filename = ttk.Label(self.extract_filefield, textvar=self.filename_var, anchor='w')
@@ -75,11 +107,22 @@ class Notebook(tk.Tk):
 		self.extract_text.configure(yscrollcommand=self.scrollbar.set)
 		self.extract_text.insert('1.0', 'Import files via the menu to get started')
 		self.extract_text.bind('<ButtonRelease-1>', self.show_corrections)
+		self.extract_text.bind('<Escape>', self.hide_corrections)
 		self.extract_text.focus_force()
 
 		# Classify tab
 		self.classify = ttk.Frame(self.notebook)
 		self.classify_label = ttk.Label(self.classify, text='Whaaaat', style='Example.TLabel')
+
+		# View Data tab
+		self.project_data = ttk.Frame(self.notebook)
+		self.selected_data_view = tk.StringVar(self, value='File History')
+		self.data_view_selector = ttk.Combobox(self.project_data, state='readonly', textvar=self.selected_data_view)
+		self.data_view_selector['values'] = [self.selected_data_view.get()] + list(wordlists.keys())
+		self.data_view_selector.current(0)
+		self.data_view_selector.bind('<<ComboboxSelected>>', self.data_view_selection_change)
+		self.data_view = ttk.Label(self.project_data, text='\n'.join(filehistory))
+		self.data_info = ttk.Label(self.project_data, text=filehist_infotext)
 
 		# Packing
 		self.extract_filename.pack(side='left', fill='both')
@@ -90,15 +133,33 @@ class Notebook(tk.Tk):
 
 		self.classify_label.pack(side='top', fill='both', expand=1)
 
+		self.data_view_selector.pack(side='top')
+		self.data_view.pack(side='top', fill='both', expand=1)
+		self.data_info.pack(side='bottom', fill='both', expand=1)
+
 		self.notebook.add(self.extract, text='Extract Text')
 		self.notebook.add(self.classify, text='Classify')
+		self.notebook.add(self.project_data, text='View Data')
 		self.notebook.pack(fill='both', expand=1)
 		self.config(menu=self.menu)
 
-	def get_correction_menu_coords(self):
+	def data_view_selection_change(self, event=None):
+		self.data_view_selector.selection_clear()
+		if self.selected_data_view.get() == 'File History':
+			self.data_info['text'] = filehist_infotext
+			self.data_view['text'] = '\n'.join(filehistory)
+		else:
+			self.data_info['text'] = cat_infotext
+			self.data_view['text'] = '\n'.join(wordlists[self.selected_data_view.get()])
+
+	def get_correction_menu_coords(self, num_entries):
+		# TODO: Investigate this. How does the offset work exactly?
+		print(num_entries)
 		bbox = self.extract_text.bbox('insert')
+		print(bbox)
+		offset = ((num_entries+1) * self.font_size)
 		menu_x = bbox[0] + self.winfo_x() + self.extract_text.winfo_x()
-		menu_y = bbox[1] + self.winfo_y() + self.extract_text.winfo_y() + self.font_size
+		menu_y = bbox[1] + self.winfo_y() + self.extract_text.winfo_y() + offset
 		return (menu_x, menu_y)
 
 	def get_corrections(self, word):
@@ -110,6 +171,9 @@ class Notebook(tk.Tk):
 			return candidates
 
 	def show_corrections(self, event=None):
+		# Make sure we don't have two menus open
+		self.hide_corrections()
+
 		# Get the word at the index
 		index = self.extract_text.index('insert')
 		try:
@@ -119,23 +183,21 @@ class Notebook(tk.Tk):
 
 		# If the word is spelled incorrectly
 		if word and len(word) > 1 and self.spell.unknown([word]):
-			# Make sure we don't have two menus open
-			self.hide_corrections()
-			self.corrections_menu = tk.Menu(self, tearoff=0)
 
 			# Get the possible corrections and add them to the menu
+			self.corrections_menu = tk.Menu(self, tearoff=0)
 			corrections = self.get_corrections(word)
 			for word in corrections:
 				callback = partial(self.replace_word, word=word, index=index)
 				self.corrections_menu.add_command(label=word, command=callback)
 
 			# Put the menu where it belongs and bind the relevant keys
-			x, y = self.get_correction_menu_coords()
+			x, y = self.get_correction_menu_coords(len(corrections))
 			self.corrections_menu.post(x, y)
 			self.corrections_menu.bind('<Escape>', self.hide_corrections)
 			self.extract_text.bind('<Down>', self.focus_corrections_menu)
 
-	def hide_corrections(self):
+	def hide_corrections(self, event=None):
 		try:
 			self.corrections_menu.destroy()
 			self.extract_text.unbind('<Down>')
@@ -144,7 +206,6 @@ class Notebook(tk.Tk):
 			pass
 
 	def focus_corrections_menu(self, event=None):
-		# TODO: Highlight selection, enter binding, check if down works
 		try:
 			self.corrections_menu.focus_force()
 			self.corrections_menu.entryconfig(0, state='active')
@@ -152,7 +213,6 @@ class Notebook(tk.Tk):
 			pass
 
 	def replace_word(self, word, index):
-		# TODO: Somehow find the actual index of wordstart to properly replace
 		self.extract_text.delete(index + ' wordstart', index + ' wordend')
 		self.extract_text.insert(index + ' wordstart', word)
 
