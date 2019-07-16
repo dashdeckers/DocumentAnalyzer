@@ -43,10 +43,17 @@ import tkinter as tk
 # User adds one or more folders full of pdfs via the menu
 # Follow the flow
 
+max_button_cols = 4
 
 wordlists = {
-	'category one' : ['word1.1', 'word1.2', 'word1.3'],
-	'category two' : ['word2.1', 'word2.2', 'word2.3'],
+	'category one' 	 : ['word1.1', 'word1.2', 'word1.3'],
+	'category two' 	 : ['word2.1', 'word2.2', 'word2.3'],
+	'category three' : ['word3.1', 'word3.2', 'word3.3'],
+	'category four'  : ['word4.1', 'word4.2', 'word4.3'],
+	'category five'  : ['word5.1', 'word5.2', 'word5.3'],
+	'category six' 	 : ['word6.1', 'word6.2', 'word6.3'],
+	'category seven' : ['word7.1', 'word7.2', 'word7.3'],
+	'category eight' : ['word8.1', 'word8.2', 'word8.3'],
 }
 
 filehistory = ['file1', 'file2', 'file3']
@@ -113,6 +120,11 @@ class Notebook(tk.Tk):
 		# Classify tab
 		self.classify = ttk.Frame(self.notebook)
 		self.classify_label = ttk.Label(self.classify, text='Whaaaat', style='Example.TLabel')
+		self.buttons_frame = ttk.Frame(self.classify)
+		self.cat_names = list(wordlists.keys())
+		cat_buttons = list()
+		for i in range(len(self.cat_names)):
+			cat_buttons.append(ttk.Button(self.buttons_frame, text=self.cat_names[i] + f' ({i})', command=self.dummy_function))
 
 		# View Data tab
 		self.project_data = ttk.Frame(self.notebook)
@@ -122,7 +134,9 @@ class Notebook(tk.Tk):
 		self.data_view_selector.current(0)
 		self.data_view_selector.bind('<<ComboboxSelected>>', self.data_view_selection_change)
 		self.data_view = ttk.Label(self.project_data, text='\n'.join(filehistory))
+		self.data_view.configure(anchor='center')
 		self.data_info = ttk.Label(self.project_data, text=filehist_infotext)
+		self.data_info.configure(anchor='center')
 
 		# Packing
 		self.extract_filename.pack(side='left', fill='both')
@@ -132,6 +146,9 @@ class Notebook(tk.Tk):
 		self.extract_text.pack(side='top', fill='both', expand=1)
 
 		self.classify_label.pack(side='top', fill='both', expand=1)
+		self.buttons_frame.pack(side='bottom', fill='both', expand=1)
+		for i in range(len(cat_buttons)):
+			cat_buttons[i].grid(row=int(i/max_button_cols), column=i%max_button_cols)
 
 		self.data_view_selector.pack(side='top')
 		self.data_view.pack(side='top', fill='both', expand=1)
@@ -141,7 +158,21 @@ class Notebook(tk.Tk):
 		self.notebook.add(self.classify, text='Classify')
 		self.notebook.add(self.project_data, text='View Data')
 		self.notebook.pack(fill='both', expand=1)
+		self.notebook.bind('<<NotebookTabChanged>>', self.set_bindings)
 		self.config(menu=self.menu)
+
+	def dummy_function(self, event=None):
+		# TODO: This needs to know which button was pressed, then we
+		# can change it to 'handle button press' or 'add word to cat'
+		print('nope')
+
+	def set_bindings(self, event=None):
+		if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
+			for i in range(len(self.cat_names)):
+				self.bind(str(i), self.dummy_function)
+		else:
+			for i in range(len(self.cat_names)):
+				self.unbind(str(i))
 
 	def data_view_selection_change(self, event=None):
 		self.data_view_selector.selection_clear()
