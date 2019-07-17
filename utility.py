@@ -6,6 +6,19 @@ filename1 = "./Testing/PDF_Files/test_pdf.pdf"
 filename2 = "./Testing/Text_Files/Testing.txt"
 dictfile = "./dict_50k.txt"
 
+language_dict = {
+    'English'   : 'en',
+    'German'    : 'de',
+    'Spanish'   : 'es',
+    'Portuguese': 'pt',
+    'French'    : 'fr',
+    'en' : 'English',
+    'de' : 'German',
+    'es' : 'Spanish',
+    'pt' : 'Portuguese',
+    'fr' : 'French',
+}
+
 '''
 Extracts text from a file.
 
@@ -79,20 +92,18 @@ Creates a SpellChecker object and handles language loading
 Returns a SpellChecker object
 '''
 def create_spellchecker(language='en'):
+    if language in language_dict and len(language) != 2:
+        language = language_dict[language]
+    
     if language in ['en', 'de', 'es', 'pt', 'fr']:
-        spell = SpellChecker(language=language)
-
-    elif len(language) == 2:
+        return SpellChecker(language=language)
+    else:
         path_to_dict_text = os.path.join(".", f"{language}_full.txt")
         path_to_dict = create_dictionary(path_to_dict_text)
         if not path_to_dict:
+            print(f'Did not find local dictionary for {language}')
             return
-        spell = SpellChecker(local_dictionary=path_to_dict)
-
-    else:
-        print("Language must be a valid two-letter language abbreviation")
-
-    return spell
+        return SpellChecker(local_dictionary=path_to_dict)
 
 '''
 Removes punctuation from- and tokenizes a text

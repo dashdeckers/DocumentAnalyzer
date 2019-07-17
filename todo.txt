@@ -1,0 +1,149 @@
+# TODO:
+
+# Pop up message on close (unsaved progress)
+# Spellchecker language setting function (replace self.spell?)
+# Destroy corrections menu on 'unfocus'
+# Spellcheck tagging (highlighting)
+# Pop up box to create project with user input (spinbox for cat num selection?)
+# Undo for spell corrections
+
+# Make sure you can only access the right menu items in the right tab with
+# print(self.notebook.tab(self.notebook.select(), 'text'))
+# print(self.notebook.index(self.notebook.select()))
+
+
+# Classify:
+# Show previous word, current word, next word (show how many words to go)
+# Show the categories and the keyboard shortcuts (tree view? like file explorer)
+# Show results (how many counts per cat so far) (also tree view?)
+
+
+
+# Open an existing project:
+
+# Resumes where you left off with the next file that has not been extracted yet
+# (for that, look at file history)
+
+# To start again, clear file history and it starts again at the beginning, but if
+# it finds an existing text file it shows that instead of reparsing
+
+# For more fine tuned control over which files to re-do and skip, edit the file
+# history file
+
+
+
+# Create a new project:
+
+# Creates a folder following user specifications
+# User adds one or more folders full of pdfs via the menu
+# Follow the flow
+
+
+
+
+
+
+
+
+
+# 'category one'   : ['word1.1', 'word1.2', 'word1.3'],
+# 'category two'   : ['word2.1', 'word2.2', 'word2.3'],
+# 'category three' : ['word3.1', 'word3.2', 'word3.3'],
+# 'category four'  : ['word4.1', 'word4.2', 'word4.3'],
+# 'category five'  : ['word5.1', 'word5.2', 'word5.3'],
+# 'category six'   : ['word6.1', 'word6.2', 'word6.3'],
+# 'category seven' : ['word7.1', 'word7.2', 'word7.3'],
+# 'category eight' : ['word8.1', 'word8.2', 'word8.3'],
+
+
+'''
+# OLD SPELLCHECK BAR
+
+        self.context_rvar = tk.StringVar(self, 'Context right') # all this can be replaced by a menu with corrections that pops up upon clicking the error
+        self.context_lvar = tk.StringVar(self, 'Context left')
+        self.correction_var = tk.StringVar(self, 'spelng mitsake')
+        self.spellcheck_field = ttk.Frame(self.extract)
+        self.spellcheck_cl = ttk.Label(self.spellcheck_field, textvar=self.context_lvar)    
+        self.spellcheck_cr = ttk.Label(self.spellcheck_field, textvar=self.context_rvar)
+        self.spellcheck_word = ttk.Label(self.spellcheck_field, textvar=self.correction_var)
+
+        ...
+
+        self.spellcheck_field.pack(side='bottom', fill='both', pady=10) 
+        self.spellcheck_cl.pack(side='left', fill='y')
+        self.spellcheck_cr.pack(side='right', fill='y')
+        self.spellcheck_word.pack(fill='y') # could put these in frames to center the labels within?
+
+
+# STARTPAGE PROJECT FOLDER HANDLING
+
+    # Open an existing project folder
+    def open_project_folder(self, name):
+        print("Opening an existing project: ", name)
+        pdir = os.path.join('.', name)
+
+        name = cats = lang = False
+        with open(os.path.join(pdir, 'project_info'), 'r') as file:
+            for row in file:
+                r = row.split()
+                print(r)
+                if r[0] == "Name:":
+                    self.master.metadata['project_name'] = r[1]
+                    name = True
+                if r[0] == "N_Cats:":
+                    self.master.metadata['n_categories'] = r[1]
+                    cats = True
+                if r[0] == "Language:":
+                    self.master.metadata['language'] = r[1]
+                    lang = True
+
+        if not (name or cats or lang):
+            print("The project info file is corrupt!")
+
+        if self.clear_history.get():
+            print("-- Clearing history")
+        if self.clear_cats.get():
+            print("-- Clearing categories")
+        return True
+
+    # Create a new project folder
+    def create_project_folder(self, name):
+        try:
+            print("Creating a new project: ", name)
+            pdir = os.path.join('.', name)
+            os.mkdir(pdir)
+            os.mkdir(os.path.join(pdir, 'PDF_Files'))
+            os.mkdir(os.path.join(pdir, 'Text_Files'))
+            for cat_num in range(1, self.catnum_selection.get() + 1):
+                with open(os.path.join(pdir, f'cat{cat_num}.txt'), 'w') as file:
+                    file.write("")
+            with open(os.path.join(pdir, 'project_info'), 'w') as file:
+                file.write(f"Name: {name}\n")
+                file.write(f"N_Cats: {self.catnum_selection.get()}\n")
+                file.write(f"Language: {self.language_selection.get()}\n")
+            self.master.metadata['project_name'] = name
+            self.master.metadata['n_categories'] = self.catnum_selection.get()
+            self.master.metadata['language'] = self.language_selection.get()
+        except FileExistsError:
+            self.set_error_message("Folder exists")
+            return False
+        return True
+
+    # Returns the names of all project directories in the current directory
+    def get_project_dir_names(self):
+        d = '.'
+        all_dirs = [os.path.join(d, o) for o in os.listdir(d)
+                        if os.path.isdir(os.path.join(d, o))]
+
+        p_dirs = [p_dir for p_dir in all_dirs if self.is_project_dir(p_dir)]
+        return p_dirs
+
+    # Checks if the provided directory contains a project based on whether the
+    # two main folders and the project_info file exist within it
+    def is_project_dir(self, p_dir):
+        pdf = os.path.isdir(os.path.join(p_dir, 'PDF_Files'))
+        txt = os.path.isdir(os.path.join(p_dir, 'Text_Files'))
+        info = os.path.exists(os.path.join(p_dir, 'project_info'))
+        return pdf and txt and info
+
+'''
