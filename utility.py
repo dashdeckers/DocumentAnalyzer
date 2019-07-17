@@ -26,7 +26,7 @@ TODO: Add support for .doc files
 
 Returns None if something went wrong, otherwise the text as a string
 '''
-def extract_text(filename=None):
+def text_extracter(filename=None):
     if not filename:
         print("No filename provided")
         return

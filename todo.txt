@@ -1,11 +1,8 @@
 # TODO:
 
 # Pop up message on close (unsaved progress)
-# Spellchecker language setting function (replace self.spell?)
-# Destroy corrections menu on 'unfocus'
-# Spellcheck tagging (highlighting)
-# Pop up box to create project with user input (spinbox for cat num selection?)
 # Undo for spell corrections
+# Menu items should be enabled/disabled according to current tab and state of the project
 
 # Make sure you can only access the right menu items in the right tab with
 # print(self.notebook.tab(self.notebook.select(), 'text'))

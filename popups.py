@@ -9,7 +9,7 @@ class CreateProject(tk.Toplevel):
         self.master = master
 
         self.title('Create a new project')
-        self.geometry('300x150')
+        self.geometry('300x200')
 
         self.name_label = tk.Label(self, text='Project Name')
         self.name_entry = tk.Entry(self)
@@ -66,11 +66,12 @@ class SetCategoryNames(tk.Toplevel):
         self.master = master
 
         self.title('Category names')
+        self.minsize(width=300, height=0)
 
         self.labels = list()
         self.entries = list()
         for i in range(self.master.n_cats):
-            self.labels.append(ttk.Label(self, text=f'Category {i} name'))
+            self.labels.append(ttk.Label(self, text=f'Category {i+1} name'))
             self.entries.append(tk.Entry(self))
 
         for i in range(self.master.n_cats):

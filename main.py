@@ -11,40 +11,43 @@ class DocumentClassifier(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Document Classifier')
-        self.geometry('800x1000')
+        self.geometry('800x800')
+        self.notebook = ttk.Notebook(self)
+        self.spell = create_spellchecker()
         self.font_size = 12
-
-        self.categories = dict()
 
         style = ttk.Style()
         style.configure('Example.TLabel', foreground='white', background='black')
 
-        self.notebook = ttk.Notebook(self)
-        self.spell = create_spellchecker()
+        # Project data
+        self.files_todo = list()
+        self.files_done = list()
+        self.categories = dict()
         self.project_name = None
         self.language = None
         self.n_cats = None
-
-        # Menu
-        self.menu = tk.Menu(self)
-        self.menu_projects = tk.Menu(self.menu, tearoff=0)
-        self.menu_projects.add_command(label='Create new project', command=self.create_new_project)
-        self.menu_projects.add_command(label='Open existing project', command=self.open_project)
-        self.menu_projects.add_command(label='Save current project', command=self.save_project)
-        self.menu_projects.add_command(label='Clear current project', command=self.clear_project)
-        self.menu_projects.add_command(label='Import files to current project', command=self.import_files)
-        self.menu.add_cascade(label='Project', menu=self.menu_projects)
-        self.menu_edits = tk.Menu(self.menu, tearoff=0)
-        self.menu_edits.add_command(label='Clear file history', command=self.clear_file_history)
-        self.menu_edits.add_command(label='Clear word lists', command=self.clear_word_lists)
-        self.menu_edits.add_command(label='Save text and next document', command=self.next_file)
-        self.menu_edits.add_command(label='Discard text and extract again', command=self.reparse)
-        self.menu.add_cascade(label='Edit', menu=self.menu_edits)
 
         # Tabs
         self.extract = ExtractTab(self)
         self.classify = ClassifyTab(self)
         self.dataview = DataviewTab(self)
+
+        # Menu
+        self.menu = tk.Menu(self)
+        self.menu_project = tk.Menu(self.menu, tearoff=0)
+        self.menu_project.add_command(label='Create new project', command=self.create_new_project)
+        self.menu_project.add_command(label='Open existing project', command=self.open_project)
+        self.menu_project.add_command(label='Save current project', command=self.save_project)
+        self.menu_project.add_command(label='Clear current project', command=self.clear_project)
+        self.menu_project.add_command(label='Import files to current project', command=self.import_files)
+        self.menu.add_cascade(label='Project', menu=self.menu_project)
+        self.menu_edit = tk.Menu(self.menu, tearoff=0)
+        self.menu_edit.add_command(label='Clear file history', command=self.clear_file_history)
+        self.menu_edit.add_command(label='Clear word lists', command=self.clear_word_lists)
+        self.menu_edit.add_command(label='Save text and next document', command=self.next_file)
+        self.menu_edit.add_command(label='Discard text and extract again', command=self.reparse)
+        self.menu_edit.add_command(label='Spellcheck', command=self.extract.spellcheck)
+        self.menu.add_cascade(label='Edit', menu=self.menu_edit)
 
         # Packing
         self.notebook.add(self.extract, text='Extract Text')
@@ -82,7 +85,6 @@ class DocumentClassifier(tk.Tk):
         CreateProject(self)
         # Create the folder structure
         # Make the info file
-        # Show 'Import pdfs/files via menu' in text field
         print('Creating new project')
 
     def open_project(self):
@@ -113,13 +115,19 @@ class DocumentClassifier(tk.Tk):
         print('Clearing project')
 
     def import_files(self):
-        folder = filedialog.askdirectory()
-        print(folder)
+        valid_extension = ('.pdf', '.txt', '.doc')
+
+        #folder = filedialog.askdirectory()
+        file = filedialog.askopenfilename()
+
+        if file.endswith(valid_extension):
+            self.files_todo.append(file)
+
+        self.extract.refresh_extract()
 
         # Pop up to choose a folder with the files
         # Import (copy) all valid files into project folder
         # Update the list of filenames
-        # Valid files are pdfs, text files and doc files
         print('Importing files')
 
     def clear_word_lists(self):
