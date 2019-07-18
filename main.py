@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import os
 from tkinter import messagebox, filedialog
 from extract_tab import ExtractTab
 from classify_tab import ClassifyTab
@@ -54,7 +55,7 @@ class DocumentClassifier(tk.Tk):
         self.notebook.add(self.classify, text='Classify')
         self.notebook.add(self.dataview, text='View Data')
         self.notebook.pack(fill='both', expand=1)
-        self.notebook.bind('<<NotebookTabChanged>>', self.set_bindings)
+        self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
         self.config(menu=self.menu)
 
     def refresh_project(self):
@@ -72,7 +73,29 @@ class DocumentClassifier(tk.Tk):
         self.dataview.refresh_dataview()
         self.extract.refresh_extract()
 
-    def set_bindings(self, event=None):
+    def refresh_settings(self, event=None):
+        self.set_bindings()
+        self.update_menu()
+
+    def update_menu(self):
+        if not all((self.project_name, self.language, self.n_cats)):
+            for i in range(2, 5):
+                self.menu_project.entryconfig(i, state='disabled')
+            for i in range(5):
+                self.menu_edit.entryconfig(i, state='disabled')
+        else:
+            for i in range(5):
+                self.menu_project.entryconfig(i, state='normal')
+            for i in range(2):
+                self.menu_edit.entryconfig(i, state='normal')
+            if self.files_todo:
+                for i in range(2, 5):
+                    self.menu_edit.entryconfig(i, state='normal')
+            else:
+                for i in range(2, 5):
+                    self.menu_edit.entryconfig(i, state='disabled')
+
+    def set_bindings(self):
         if self.n_cats and self.classify.cat_names:
             if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
                 for i in range(self.n_cats):
@@ -87,19 +110,52 @@ class DocumentClassifier(tk.Tk):
         # Make the info file
         print('Creating new project')
 
+    def parse_project_info_file(self, folder):
+        try:
+            with open(os.path.join(folder, 'project_info.txt'), 'r') as file:
+                lines = [line.split() for line in file.read().splitlines()]
+
+            assert lines[0][0] == 'Project_name:', 'Name problem'
+            assert lines[1][0] == 'Number_of_categories:', 'Catnum problem'
+            assert lines[2][0] == 'Project_language:', 'Language problem'
+            assert not lines[3]
+
+            self.n_cats = int(lines[1][1])
+            self.project_name = lines[0][1]
+            self.language = lines[2][1]
+
+            assert len(lines) == 4 + self.n_cats, 'Catnames problem'
+
+            for cat in range(4, 4 + self.n_cats):
+                self.categories[lines[cat][1]] = list()
+
+            return True
+
+        except (ValueError, AssertionError, FileNotFoundError) as e:
+            print('ERROR:', e)
+            return False
+
     def open_project(self):
-        # Test if unsaved progress exists, notify the user
-        # Pop up window to select a folder
-        # Test whether it is a valid folder (return 'what is missing')
-        #
-        # Then set internal settings:
-        # Set spellchecker to the correct language
-        # Set the categories (dict?)
-        # Retrieve a list of pdf filenames
-        # Retrieve the file history list
-        # Retrieve the project name (just to show in the title)
-        # Set the current filename and filenumber, and show its text
-        print('Opening project')
+        # TODO: Test if unsaved progress exists, notify the user
+        folder = filedialog.askdirectory()
+        if self.parse_project_info_file(folder):
+            self.spell = create_spellchecker(self.language)
+
+            for catname in list(self.categories.keys()):
+                with open(os.path.join(folder, f'{catname}.txt'), 'r') as file:
+                    wordlist = file.read().splitlines()
+                self.categories[catname] = wordlist
+
+            filenames = os.listdir(os.path.join(folder, 'PDF_Files'))
+
+            with open(os.path.join(folder, 'filehistory.txt'), 'r') as file:
+                done_filenames = file.read().splitlines()
+
+            self.files_done = done_filenames
+            self.files_todo = list(set(filenames) - set(done_filenames))
+
+            self.extract.update_fileprogress()
+            self.refresh_project()
 
     def save_project(self):
         # Save wordlists, file history, current text
@@ -115,19 +171,20 @@ class DocumentClassifier(tk.Tk):
         print('Clearing project')
 
     def import_files(self):
+        # TODO: Change this to just import files from the pdf folder of the current project
         valid_extension = ('.pdf', '.txt', '.doc')
 
-        #folder = filedialog.askdirectory()
-        file = filedialog.askopenfilename()
+        files = filedialog.askopenfilenames()
 
-        if file.endswith(valid_extension):
-            self.files_todo.append(file)
+        for file in files:
+            if file.endswith(valid_extension):
+                self.files_todo.append(file)
+            else:
+                messagebox.showerror('Invalid extension', f'File must be either pdf, txt or doc. Skipping {file}.')
 
         self.extract.refresh_extract()
 
-        # Pop up to choose a folder with the files
         # Import (copy) all valid files into project folder
-        # Update the list of filenames
         print('Importing files')
 
     def clear_word_lists(self):

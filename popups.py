@@ -19,6 +19,7 @@ class CreateProject(tk.Toplevel):
         self.catnum_entry = tk.Entry(self)
 
         self.create_button = tk.Button(self, text='Create Project', command=self.create_project)
+        self.bind('<Return>', self.create_project)
         self.name_entry.focus()
 
         self.name_label.pack()
@@ -29,7 +30,7 @@ class CreateProject(tk.Toplevel):
         self.catnum_entry.pack()
         self.create_button.pack()
 
-    def create_project(self):
+    def create_project(self, event=None):
         if self.valid_name() and self.valid_language() and self.valid_n_cats():
             self.master.project_name = self.name_entry.get()
             self.master.language = self.lang_entry.get()
@@ -81,10 +82,12 @@ class SetCategoryNames(tk.Toplevel):
         create_button = tk.Button(self, text='Done', command=self.create_cats)
         create_button.pack()
 
+        self.bind('<Return>', self.create_cats)
         self.entries[0].focus()
 
-    def create_cats(self):
+    def create_cats(self, event=None):
         for i in range(self.master.n_cats):
             self.master.categories[self.entries[i].get()] = list()
         self.destroy()
         self.master.refresh_project()
+        self.master.refresh_settings()

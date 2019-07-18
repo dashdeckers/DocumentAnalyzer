@@ -1,0 +1,6 @@
+Project_name: Testing
+Number_of_categories: 2
+Project_language: English
+
+Category_1_name: shitman
+Category_2_name: boombaby

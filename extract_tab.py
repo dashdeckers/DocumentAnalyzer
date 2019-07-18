@@ -1,20 +1,23 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import os
 from functools import partial
-from utility import text_extracter
+from utility import text_extracter, clean_text
+
+import time
 
 class ExtractTab(tk.Frame):
     def __init__(self, master):
         super().__init__()
         self.master = master
-        self.default_text = 'Import files via the menu to get started '
+        self.default_text = 'Open or create a project and then import files via the menu to get started '
 
         self.filename_var = tk.StringVar(self, value='')
         self.filenumber_var = tk.StringVar(self, value='')
         self.extract_filefield = ttk.Frame(self)
         self.extract_filename = ttk.Label(self.extract_filefield, textvar=self.filename_var, anchor='w')
         self.extract_filenumber = ttk.Label(self.extract_filefield, textvar=self.filenumber_var, anchor='e')
-        self.extract_text = tk.Text(self, bg='white', fg='black', font=(None, self.master.font_size))
+        self.extract_text = tk.Text(self, font=(None, self.master.font_size), wrap='word')
         self.scrollbar = tk.Scrollbar(self, orient='vertical')
         self.extract_text.configure(yscrollcommand=self.scrollbar.set)
         self.extract_text.tag_configure("misspelled", foreground="red", underline=True)
@@ -33,15 +36,17 @@ class ExtractTab(tk.Frame):
         self.extract_text.pack(side='top', fill='both', expand=1)
 
     def refresh_extract(self):
-        # TODO: This should check the file list and put the extracted text of the first file if there are files
         self.hide_corrections()
-        if self.master.files_todo and self.extract_text.get('1.0', 'end') != self.default_text:
-            text = text_extracter(self.master.files_todo[0])
+        # Check the file list and put the extracted text of the first file if there are files
+        if self.master.files_todo:
+            text = text_extracter(os.path.join(self.master.project_name, 'PDF_Files', self.master.files_todo[0]))
+            text = clean_text(text)
             self.extract_text.delete('1.0', 'end')
             self.extract_text.insert('1.0', text)
             # Add a space at the end to make sure the replace word function always works
             self.extract_text.insert('end', ' ')
-        self.update_fileprogress()
+            self.update_fileprogress()
+            self.spellcheck()
 
     def update_fileprogress(self):
         num_files_done = len(self.master.files_done)
@@ -50,12 +55,17 @@ class ExtractTab(tk.Frame):
         self.filenumber_var.set(f'{num_files_done+1}/{num_files_todo+num_files_done}')
 
     def get_corrections(self, word):
+        t0 = time.time()
         # TODO: This needs to be filtered to show suggestions ranked based on distance
         candidates = list(self.master.spell.candidates(word))
-        if len(candidates) > 10:
-            return candidates[:10]
+        print(f'Candidates after {time.time()-t0}')
+        best_guess = self.master.spell.correction(word)
+        candidates.remove(best_guess)
+        print(f'Best guess after {time.time()-t0}')
+        if len(candidates) > 5:
+            return [best_guess] + candidates[:5]
         else:
-            return candidates
+            return [best_guess] + candidates
 
     def show_corrections(self, event=None):
         # Make sure we don't have two menus open
@@ -88,31 +98,30 @@ class ExtractTab(tk.Frame):
         try:
             self.corrections_menu.destroy()
             self.extract_text.unbind('<Down>')
-            self.extract_text.focus_force()
+            self.extract_text.focus()
         except AttributeError:
             pass
 
     def focus_corrections_menu(self, event=None):
         try:
-            self.corrections_menu.focus_force()
+            self.corrections_menu.focus()
             self.corrections_menu.entryconfig(0, state='active')
         except tk.TclError:
             pass
 
     def replace_word(self, word, index):
         self.extract_text.delete(index + ' wordstart', index + ' wordend')
-        self.extract_text.insert(index + ' wordstart -1c', word)
+        self.extract_text.insert('insert', word)
 
     def spellcheck(self, event=None):
-        text = self.extract_text.get('1.0', 'end')
-        words = text.split()
-        spelling_errors = self.master.spell.unknown(words)
-
-        # Find and highlight each spelling error
+        # Loop through each word in text
         index = '1.0'
-        for word in spelling_errors:
-            # TODO: Only finds the first occurance!
-            index = self.extract_text.search(word, '1.0', 'end')
-            if index == '':
-                index = '1.0'
-            self.extract_text.tag_add('misspelled', index, f'{index}+{len(word)}c')
+        while index:
+            index = self.extract_text.search(r'\w+', index, 'end', regexp=1)
+            if index:
+                word = self.extract_text.get(index, index + ' wordend')
+                word_end_index = f'{index}+{len(word)}c'
+                # If the word is a spelling error, tag it
+                if self.master.spell.unknown([word]):
+                    self.extract_text.tag_add('misspelled', index, word_end_index)
+                index = word_end_index

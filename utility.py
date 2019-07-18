@@ -7,16 +7,16 @@ filename2 = "./Testing/Text_Files/Testing.txt"
 dictfile = "./dict_50k.txt"
 
 language_dict = {
-    'English'   : 'en',
-    'German'    : 'de',
-    'Spanish'   : 'es',
-    'Portuguese': 'pt',
-    'French'    : 'fr',
-    'en' : 'English',
-    'de' : 'German',
-    'es' : 'Spanish',
-    'pt' : 'Portuguese',
-    'fr' : 'French',
+    'english'   : 'en',
+    'german'    : 'de',
+    'spanish'   : 'es',
+    'portuguese': 'pt',
+    'french'    : 'fr',
+    'en' : 'english',
+    'de' : 'german',
+    'es' : 'spanish',
+    'pt' : 'portuguese',
+    'fr' : 'french',
 }
 
 '''
@@ -92,6 +92,7 @@ Creates a SpellChecker object and handles language loading
 Returns a SpellChecker object
 '''
 def create_spellchecker(language='en'):
+    language = language.lower()
     if language in language_dict and len(language) != 2:
         language = language_dict[language]
     
@@ -106,11 +107,11 @@ def create_spellchecker(language='en'):
         return SpellChecker(local_dictionary=path_to_dict)
 
 '''
-Removes punctuation from- and tokenizes a text
+Removes punctuation from a text
 
-TODO: Parse tokens again to remove stop words (which should come from a file?)
+TODO: Parse again to remove stop words (which should come from a file?)
 
-Returns cleaned tokens as a list
+Returns cleaned text
 '''
 def clean_text(text=None, extra_punctuation=""):
     if not text:
@@ -118,17 +119,12 @@ def clean_text(text=None, extra_punctuation=""):
         return
 
     # Remove punctuation
-    punctuation = string.punctuation + extra_punctuation + "—•’‚˙˜˚ˆˇ˜Ł™˛˝˘"
+    punctuation = string.punctuation + extra_punctuation + "Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘"
     print("Punctuation to be removed:", punctuation)
     table = str.maketrans(dict.fromkeys(punctuation))
     text = text.translate(table)
 
-    # Tokenize
-    tokens = text.split()
-
-    # Remove stop words
-    
-    return tokens
+    return text
 
 '''
 Show the context of the first (or all) occurance of a word in the text
