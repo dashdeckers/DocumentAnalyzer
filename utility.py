@@ -1,10 +1,8 @@
 import PyPDF2, os, json, string
 from spellchecker import SpellChecker
 
-filename = "./Testing/PDF_Files/full.pdf"
-filename1 = "./Testing/PDF_Files/test_pdf.pdf"
-filename2 = "./Testing/Text_Files/Testing.txt"
-dictfile = "./dict_50k.txt"
+file_folder = 'PDF_Files'
+text_folder = 'Text_Files'
 
 language_dict = {
     'english'   : 'en',
@@ -168,9 +166,13 @@ def show_context(tokens=None, word=None, context_range=3, show_all=False):
     return all_contexts
 
 if __name__ == "__main__":
+    filename = "./Testing/PDF_Files/full.pdf"
+    filename1 = "./Testing/PDF_Files/test_pdf.pdf"
+    filename2 = "./Testing/Text_Files/Testing.txt"
+    dictfile = "./dict_50k.txt"
     #print(extract_text(filename2))
     #print(create_dictionary(dictfile))
-    text = extract_text(filename)
+    text = text_extracter(filename)
     tokens = clean_text(text)
     print(" ".join(tokens))
     pass

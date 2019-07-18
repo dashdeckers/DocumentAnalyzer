@@ -41,7 +41,7 @@ class CreateProject(tk.Toplevel):
 
     def valid_name(self):
         name = self.name_entry.get()
-        if not all(char.isalpha() or char.isspace() for char in name):
+        if not all(char.isalpha() or char.isspace() or char == '_' for char in name):
             msg.showerror('Error', 'Project name must be alphabetical')
             return False
         return True
@@ -91,3 +91,4 @@ class SetCategoryNames(tk.Toplevel):
         self.destroy()
         self.master.refresh_project()
         self.master.refresh_settings()
+        self.master.create_new_project()

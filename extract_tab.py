@@ -2,8 +2,11 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import os
 from functools import partial
-from utility import text_extracter, clean_text
-
+from utility import (
+    text_extracter, 
+    clean_text,
+    file_folder,
+)
 import time
 
 class ExtractTab(tk.Frame):
@@ -39,7 +42,7 @@ class ExtractTab(tk.Frame):
         self.hide_corrections()
         # Check the file list and put the extracted text of the first file if there are files
         if self.master.files_todo:
-            text = text_extracter(os.path.join(self.master.project_name, 'PDF_Files', self.master.files_todo[0]))
+            text = text_extracter(os.path.join('.', self.master.project_name, file_folder, self.master.files_todo[0]))
             text = clean_text(text)
             self.extract_text.delete('1.0', 'end')
             self.extract_text.insert('1.0', text)

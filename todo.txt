@@ -2,14 +2,10 @@
 
 # Pop up message on close (unsaved progress)
 # Undo for spell corrections
-# Menu items should be enabled/disabled according to current tab and state of the project
+# self.language should be consistently the full version of the name ('German' vs 'de')
+# Make a dictionary of error(+etc) strings in utility
 
-# Make sure you can only access the right menu items in the right tab with
-# print(self.notebook.tab(self.notebook.select(), 'text'))
-# print(self.notebook.index(self.notebook.select()))
-
-
-# Classify:
+# Classify: Thoughts
 # Show previous word, current word, next word (show how many words to go)
 # Show the categories and the keyboard shortcuts (tree view? like file explorer)
 # Show results (how many counts per cat so far) (also tree view?)
