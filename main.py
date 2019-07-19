@@ -97,17 +97,9 @@ class DocumentClassifier(tk.Tk):
 
         Only called by refresh_settings().
 
-        TODO: Double check this (+ the check) after filling in the functionality for the add_word function
+        TODO: Double check classify bindings + the check after filling in the functionality for the add_word function
         TODO: Put all keyboard bindings here, from all tabs to have a better overview
         '''
-        if self.n_cats and self.classify.cat_names:
-            if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
-                for i in range(self.n_cats):
-                    self.bind(str(i+1), lambda event=0, b_num=i, b_name=self.classify.cat_names[i]: self.classify.add_word_to_cat(event, b_num, b_name))
-            else:
-                for i in range(self.n_cats):
-                    self.unbind(str(i+1))
-
         self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
         self.notebook.bind('<Control-n>', self.show_new_project_popup)
         self.notebook.bind('<Control-o>', self.open_project)
@@ -120,6 +112,14 @@ class DocumentClassifier(tk.Tk):
         self.extract.extract_text.bind('<Control-s>', self.extract.next_file)
         self.extract.extract_text.bind('<Control-o>', self.open_project)
         self.extract.extract_text.bind('<Control-r>', self.sync_project)
+
+        if self.n_cats and self.classify.cat_names:
+            if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
+                for i in range(self.n_cats):
+                    self.bind(str(i+1), lambda event=0, b_num=i, b_name=self.classify.cat_names[i]: self.classify.add_word_to_cat(event, b_num, b_name))
+            else:
+                for i in range(self.n_cats):
+                    self.unbind(str(i+1))
 
     def show_new_project_popup(self):
         '''Asks for user confirmation before clearing the current project
@@ -191,6 +191,16 @@ class DocumentClassifier(tk.Tk):
         self.extract.filename_var.set('')
         self.extract.filenumber_var.set('')
 
+        self.classify.cat_names = None
+        self.classify.cat_buttons = None
+        self.classify.previous_word_var.set('')
+        self.classify.current_word_var.set('')
+        self.classify.next_word_var.set('')
+
+        self.dataview.selected_data_view.set('File History')
+        self.dataview.data_view_selector['values'] = ['File History']
+        self.dataview.data_view_selector.current(0)
+
         self.classify.refresh_classify()
         self.dataview.refresh_dataview()
         self.extract.refresh_extract()
@@ -238,7 +248,7 @@ class DocumentClassifier(tk.Tk):
             return False
 
         except FileNotFoundError as e:
-            messagebox.showerror('Project info file error', f'The project info file is missing: {e}.')
+            messagebox.showerror('Project info file error', f'The project info file (project_info.txt) is missing. Is this a valid project folder?')
             return False
 
     def open_project(self, event=None):
@@ -292,9 +302,12 @@ class DocumentClassifier(tk.Tk):
                     for word in combined:
                         if word not in no_duplicates:
                             no_duplicates.append(word)
+
                 with open(os.path.join('.', self.project_name, catname + '.txt'), 'w') as file:
                     for word in no_duplicates:
                         file.write(word + '\n')
+
+                self.categories[catname] = no_duplicates
 
         except FileNotFoundError as e:
             messagebox.showerror('Category file error', f'A category file is missing: {e}.')
@@ -313,6 +326,8 @@ class DocumentClassifier(tk.Tk):
             with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'w') as file:
                 for filename in new_filehistory:
                     file.write(filename + '\n')
+
+            self.files_done = new_filehistory
 
         except FileNotFoundError as e:
             messagebox.showerror('Filehistory file error', f'The file history file is missing: {e}.')
