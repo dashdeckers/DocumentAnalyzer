@@ -4,6 +4,7 @@
 # Undo for spell corrections
 # self.language should be consistently the full version of the name ('German' vs 'de')
 # Make a dictionary of error(+etc) strings in utility
+# There is possibility for error between the two popups... think about this again
 
 # Classify: Thoughts
 # Show previous word, current word, next word (show how many words to go)

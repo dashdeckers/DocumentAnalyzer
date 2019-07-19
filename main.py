@@ -5,7 +5,7 @@ from tkinter import messagebox, filedialog
 from extract_tab import ExtractTab
 from classify_tab import ClassifyTab
 from dataview_tab import DataviewTab
-from popups import CreateProject, SetCategoryNames
+from popups import CreateProject
 from utility import (
     create_spellchecker,
     file_folder,
@@ -13,18 +13,21 @@ from utility import (
 )
 
 class DocumentClassifier(tk.Tk):
+    '''
+    TODO: Fill this in.
+    '''
     def __init__(self):
         super().__init__()
         self.title('Document Classifier')
         self.geometry('800x800')
         self.notebook = ttk.Notebook(self)
-        self.spell = create_spellchecker()
         self.font_size = 12
 
         style = ttk.Style()
         style.configure('Example.TLabel', foreground='white', background='black')
 
         # Project data
+        self.spell = create_spellchecker()
         self.files_todo = list()
         self.files_done = list()
         self.categories = dict()
@@ -40,18 +43,14 @@ class DocumentClassifier(tk.Tk):
         # Menu
         self.menu = tk.Menu(self)
         self.menu_project = tk.Menu(self.menu, tearoff=0)
-        self.menu_project.add_command(label='Create new project', command=lambda slf=self: CreateProject(slf))
-        self.menu_project.add_command(label='Open existing project', command=self.open_project)
-        self.menu_project.add_command(label='Save current project', command=self.save_project)
-        self.menu_project.add_command(label='Clear current project', command=self.clear_project)
-        self.menu_project.add_command(label='Import files to current project', command=self.import_files)
+        self.menu_project.add_command(label='Create new project', command=self.show_new_project_popup, accelerator='Ctrl+N')
+        self.menu_project.add_command(label='Open existing project', command=self.open_project, accelerator='Ctrl+O')
+        self.menu_project.add_command(label='Synchronize current project', command=self.sync_project, accelerator='Ctrl+R')
         self.menu.add_cascade(label='Project', menu=self.menu_project)
         self.menu_edit = tk.Menu(self.menu, tearoff=0)
-        self.menu_edit.add_command(label='Clear file history', command=self.clear_file_history)
-        self.menu_edit.add_command(label='Clear word lists', command=self.clear_word_lists)
-        self.menu_edit.add_command(label='Save text and next document', command=self.next_file)
-        self.menu_edit.add_command(label='Discard text and extract again', command=self.reparse)
-        self.menu_edit.add_command(label='Spellcheck', command=self.extract.spellcheck)
+        self.menu_edit.add_command(label='Save & next document', command=self.extract.next_file, underline=1, accelerator='Ctrl+S')
+        self.menu_edit.add_command(label='Redo current document', command=self.extract.reparse)
+        self.menu_edit.add_command(label='Spellcheck', command=self.extract.spellcheck, underline=1, accelerator='Ctrl+P')
         self.menu.add_cascade(label='Edit', menu=self.menu_edit)
 
         # Packing
@@ -59,48 +58,48 @@ class DocumentClassifier(tk.Tk):
         self.notebook.add(self.classify, text='Classify')
         self.notebook.add(self.dataview, text='View Data')
         self.notebook.pack(fill='both', expand=1)
-        self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
         self.config(menu=self.menu)
 
-    def refresh_project(self):
-        if self.language:
-            self.spell = create_spellchecker(self.language)
-        else:
-            self.spell = create_spellchecker()
-
-        if self.project_name:
-            self.title(self.project_name)
-        else:
-            self.title('Document Classifier')
-
-        self.classify.refresh_classify()
-        self.dataview.refresh_dataview()
-        self.extract.refresh_extract()
+        self.refresh_settings()
 
     def refresh_settings(self, event=None):
+        '''Set both the status for each menu item as well as the
+        correct keyboard bindings.
+
+        Called every time the tab is switched and upon initialization.
+        '''
         self.set_bindings()
         self.update_menu()
 
     def update_menu(self):
-        if not all((self.project_name, self.language, self.n_cats)):
-            for i in range(2, 5):
-                self.menu_project.entryconfig(i, state='disabled')
-            for i in range(5):
+        '''Set the state of the menu items depending on whether a project
+        is currently open or not.
+
+        Only called by refresh_settings().
+        '''
+        if not self.project_currently_open():
+            self.menu_project.entryconfig(2, state='disabled')
+            for i in range(3):
                 self.menu_edit.entryconfig(i, state='disabled')
         else:
-            for i in range(5):
+            for i in range(3):
                 self.menu_project.entryconfig(i, state='normal')
-            for i in range(2):
-                self.menu_edit.entryconfig(i, state='normal')
             if self.files_todo:
-                for i in range(2, 5):
+                for i in range(3):
                     self.menu_edit.entryconfig(i, state='normal')
             else:
-                for i in range(2, 5):
+                for i in range(3):
                     self.menu_edit.entryconfig(i, state='disabled')
 
     def set_bindings(self):
-        # TODO: Double check this (+ the check) after filling in the functionality for that function
+        '''Set the appropriate keyboard bindings depending on which tab the
+        user is currently viewing.
+
+        Only called by refresh_settings().
+
+        TODO: Double check this (+ the check) after filling in the functionality for the add_word function
+        TODO: Put all keyboard bindings here, from all tabs to have a better overview
+        '''
         if self.n_cats and self.classify.cat_names:
             if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
                 for i in range(self.n_cats):
@@ -109,11 +108,44 @@ class DocumentClassifier(tk.Tk):
                 for i in range(self.n_cats):
                     self.unbind(str(i+1))
 
+        self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
+        self.notebook.bind('<Control-n>', self.show_new_project_popup)
+        self.notebook.bind('<Control-o>', self.open_project)
+        self.notebook.bind('<Control-r>', self.sync_project)
+
+        self.extract.extract_text.bind('<ButtonRelease-1>', self.extract.show_corrections)
+        self.extract.extract_text.bind('<Escape>', self.extract.hide_corrections)
+        self.extract.extract_text.bind('<FocusOut>', self.extract.hide_corrections)
+        self.extract.extract_text.bind('<Control-p>', self.extract.spellcheck)
+        self.extract.extract_text.bind('<Control-s>', self.extract.next_file)
+        self.extract.extract_text.bind('<Control-o>', self.open_project)
+        self.extract.extract_text.bind('<Control-r>', self.sync_project)
+
+    def show_new_project_popup(self):
+        '''Asks for user confirmation before clearing the current project
+        and creating a new one via popup windows.
+
+        Called by the user.
+
+        TODO: Ask for confirmation
+        '''
+        if True:
+            self.clear_current_project()
+            CreateProject(self)
+
     def create_new_project(self):
-        # Create folders
+        '''Creates a new project from internal data from user input obtained
+        from popup windows.
+
+        Called by the SetCategoryNames popup, which is called by the
+        CreateProject popup.
+
+        TODO: Make sure to write the full language name, and not the shortcut.
+        '''
         os.mkdir(os.path.join('.', self.project_name))
         os.mkdir(os.path.join('.', self.project_name, file_folder))
         os.mkdir(os.path.join('.', self.project_name, text_folder))
+        
         # Create project info file
         with open(os.path.join('.', self.project_name, 'project_info.txt'), 'w') as file:
             file.write(
@@ -124,120 +156,220 @@ class DocumentClassifier(tk.Tk):
             )
             for catnum, catname in enumerate(list(self.categories.keys())):
                 file.write(f'Category_{catnum}_name: {catname}\n')
+
                 # Create the category / wordlist files
                 with open(os.path.join('.', self.project_name, f'{catname}.txt'), 'w') as catfile:
                     pass
+
         # Create file history file
         with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'w') as file:
             pass
 
+        self.refresh_settings()
+        self.spell = create_spellchecker(self.language)
+        self.title(self.project_name)
+        self.classify.refresh_classify()
+        self.dataview.refresh_dataview()
+        self.extract.refresh_extract()
+
+    def clear_current_project(self):
+        '''Purges all internal project data.
+
+        Called by open_project() and by show_new_project_popup().
+
+        TODO: Make sure this purges the data from each tab as well
+        '''
+        self.title('Document Classifier')
+        self.spell = create_spellchecker()
+        self.files_todo = list()
+        self.files_done = list()
+        self.categories = dict()
+        self.project_name = None
+        self.language = None
+        self.n_cats = None
+
+        self.extract.filename_var.set('')
+        self.extract.filenumber_var.set('')
+
+        self.classify.refresh_classify()
+        self.dataview.refresh_dataview()
+        self.extract.refresh_extract()
+
     def parse_project_info_file(self, folder):
+        '''Parses a project_info.txt file and incorporates the contained
+        information.
+
+        Only called by open_project().
+
+        **Args**:
+
+        * folder (str): The path to the project folder.
+
+        **Returns**:
+        True if no problems were encountered.
+        '''
         try:
             # Read data
-            with open(os.path.join('.', folder, 'project_info.txt'), 'r') as file:
+            with open(os.path.join(folder, 'project_info.txt'), 'r') as file:
                 lines = [line.split() for line in file.read().splitlines()]
 
             # Make sure the main data has the valid format and parse it
-            assert lines[0][0] == 'Project_name:', 'Name problem'
-            assert lines[1][0] == 'Number_of_categories:', 'Catnum problem'
-            assert lines[2][0] == 'Project_language:', 'Language problem'
-            assert not lines[3]
+            assert lines[0][0] == 'Project_name:', 'First line must start with "Project_name:"'
+            assert lines[1][0] == 'Number_of_categories:', 'Second line must start with "Number_of_categories:"'
+            assert lines[2][0] == 'Project_language:', 'Third line must start with "Project_language:"'
+            assert not lines[3], 'Fourth line must be emmpty'
+            assert lines[0][1] == os.path.split(folder)[-1], 'Folder name must be equal to the project name'
             self.n_cats = int(lines[1][1])
             self.project_name = lines[0][1]
             self.language = lines[2][1]
 
             # Make sure the category data has the valid format
-            assert len(lines) == 4 + self.n_cats, 'Catnames problem'
+            assert len(lines) == 4 + self.n_cats, 'Number_of_categories not consistent with number of lines describing category names'
             for cat in range(4, 4 + self.n_cats):
                 self.categories[lines[cat][1]] = list()
             return True
 
-        except (ValueError, AssertionError, FileNotFoundError) as e:
-            print('ERROR:', e)
+        except ValueError:
+            messagebox.showerror('Project info file error', f'Invalid "Number_of_categories" value in project info file. Must be an integer!')
             return False
 
-    def open_project(self):
-        # TODO: Test if unsaved progress exists, notify the user
+        except AssertionError as e:
+            messagebox.showerror('Project info file error', f'Problem with the project info file structure: {e}.')
+            return False
+
+        except FileNotFoundError as e:
+            messagebox.showerror('Project info file error', f'The project info file is missing: {e}.')
+            return False
+
+    def open_project(self, event=None):
+        '''Open a project folder selected by the user.
+
+        Called by the user.
+
+        TODO: Test if unsaved progress exists, notify the user.
+        '''
         folder = filedialog.askdirectory()
+        if not folder:
+            return
 
-        try:
-            # Parse project info file
-            assert self.parse_project_info_file(folder), 'Invalid project_info file'
+        self.clear_current_project()
 
-            # Update the spellchecker language
+        if self.parse_project_info_file(folder):
+            self.sync_project()
+            self.refresh_settings()
             self.spell = create_spellchecker(self.language)
+            self.title(self.project_name)
+            self.classify.refresh_classify()
+            self.dataview.refresh_dataview()
+            self.extract.refresh_extract()
+        else:
+            self.clear_current_project()
 
-            # Update category wordlists
+    def sync_project(self, event=None):
+        '''Synchronize the project by synchronizing wordlists, filehistory
+        and category wordlists.
+
+        Called by the user and by open_project().
+        '''
+        if self.project_currently_open():
+            self.sync_wordlists()
+            self.sync_filehistory()
+            self.sync_files()
+
+    def sync_wordlists(self):
+        '''Synchronizes the wordlists such that the category files contain
+        the combined elements of the internal wordlists (self.categories) 
+        and the category files, not allowing duplicates.
+
+        Only called by sync_project().
+        '''
+        try:
             for catname in list(self.categories.keys()):
-                with open(os.path.join('.', folder, f'{catname}.txt'), 'r') as file:
-                    wordlist = file.read().splitlines()
-                self.categories[catname] = wordlist
+                with open(os.path.join('.', self.project_name, catname + '.txt'), 'r') as file:
+                    catfile_contents = file.read().splitlines()
+                    combined = self.categories[catname] + catfile_contents
+                    no_duplicates = list()
+                    for word in combined:
+                        if word not in no_duplicates:
+                            no_duplicates.append(word)
+                with open(os.path.join('.', self.project_name, catname + '.txt'), 'w') as file:
+                    for word in no_duplicates:
+                        file.write(word + '\n')
 
-            # Update list of filenames from document folder
-            filenames = os.listdir(os.path.join('.', folder, file_folder))
+        except FileNotFoundError as e:
+            messagebox.showerror('Category file error', f'A category file is missing: {e}.')
 
-            # Update the file history
-            with open(os.path.join('.', folder, 'filehistory.txt'), 'r') as file:
-                done_filenames = file.read().splitlines()
-            self.files_done = done_filenames
-            self.files_todo = list(set(filenames) - set(done_filenames))
+    def sync_filehistory(self):
+        '''Adds the filenames present in self.files_done, and not already 
+        present in filehistory.txt, to filehistory.txt.
 
-            # Update internal stuff
-            self.extract.update_fileprogress()
-            self.refresh_project()
+        Only called by sync_project().
+        '''
+        try:
+            with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'r') as file:
+                filehistory = file.read().splitlines()
+                new_filehistory = filehistory + [file for file in self.files_done if file not in filehistory]
 
-        except (AssertionError, FileNotFoundError) as e:
-            print('ERROR:', e)
-            messagebox.showerror('Problem loading project', 'Something went wrong loading the project, please make sure the structure is valid')
+            with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'w') as file:
+                for filename in new_filehistory:
+                    file.write(filename + '\n')
 
-    def save_project(self):
-        # Save wordlists, file history, current text
-        print('Saving project')
+        except FileNotFoundError as e:
+            messagebox.showerror('Filehistory file error', f'The file history file is missing: {e}.')
 
-    def clear_project(self):
-        # Remind user what he is doing (make sure)
-        # Delete: 
-        # All saved text files
-        # Wordlists
-        # File history
-        # Results
-        print('Clearing project')
+    def sync_files(self):
+        '''Synchronises the files in the project folder (file_folder),
+        and filehistory.txt with the internal lists self.files_done and 
+        self.files_todo. The list of files present in the folder and NOT 
+        listed in filehistory.txt will replace the self.files_todo list. 
+        The list of files present in the folder and listed in
+        filehistory.txt will replace the self.files_done list.
 
-    def import_files(self):
-        # TODO: Change this to just import files from the pdf folder of the current project
-        valid_extension = ('.pdf', '.txt', '.doc')
+        Any entries in filehistory.txt that are not present in the file
+        folder will be shown to the user. Any files in the file folder
+        with an invalid extension will be shown to the user.
 
-        files = filedialog.askopenfilenames()
+        Only called by sync_project().
+        '''
+        try:
+            valid_extension = ('.pdf', '.txt', '.doc')
+            files_directory = os.path.join('.', self.project_name, file_folder)
 
-        for file in files:
-            if file.endswith(valid_extension):
-                self.files_todo.append(file)
-            else:
-                messagebox.showerror('Invalid extension', f'File must be either pdf, txt or doc. Skipping {file}.')
+            files = [file for file in os.listdir(files_directory) if os.path.isfile(os.path.join(files_directory, file))]
+            valid_files = list()
+            invalid_files = list()
+            for file in files:
+                if file.endswith(valid_extension):
+                    valid_files.append(file)
+                else:
+                    invalid_files.append(file)
 
-        self.extract.refresh_extract()
+            with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'r') as file:
+                filehistory = file.read().splitlines()
 
-        # Import (copy) all valid files into project folder
-        print('Importing files')
+            self.files_done = [file for file in valid_files if file in filehistory]
+            self.files_todo = [file for file in valid_files if file not in filehistory]
 
-    def clear_word_lists(self):
-        # Remind user what he is doing (make sure)
-        print('Clearing word lists')
+            filehistory_inconsistencies = [file for file in filehistory if file not in self.files_done]
+            if filehistory_inconsistencies:
+                messagebox.showerror('Filehistory error', f'There are files listed in filehistory that are not in the files folder: {[f for f in filehistory_inconsistencies]}.')
+            if invalid_files:
+                messagebox.showerror('Invalid extension', f'File must be either pdf, txt or doc. Skipping: {[f for f in invalid_files]}.')
 
-    def clear_file_history(self):
-        # Remind user what he is doing (make sure)
-        print('Clearing file history')
+            self.extract.refresh_extract()
 
-    def next_file(self):
-        # Save the text with the same filename in text folder
-        # Extract text from next file
-        print('Saving and parsing the next file')
+        except FileNotFoundError as e:
+            messagebox.showerror('Filehistory file error', f'The file history file is missing: {e}.')
 
-    def reparse(self):
-        # Remind user what he is doing (make sure)
-        # Extract text from the current file and replace the current text
-        print('Discarding text and parsing the file again')
+    def project_currently_open(self):
+        '''Checks if a project is currently open.
 
+        Called by update_menu() and by sync_project().
+
+        **Returns**:
+        True if there is a project open.
+        '''
+        return self.project_name and self.n_cats and self.language
 
 if __name__ == '__main__':
     App = DocumentClassifier()
