@@ -49,6 +49,7 @@ class ExtractTab(tk.Frame):
         extracted, it runs a spellcheck on it. Also updates the fileprogress bar.
 
         Called by:
+        master.create_new_project()
         master.clear_current_project()
         master.open_project()
         master.sync_files()

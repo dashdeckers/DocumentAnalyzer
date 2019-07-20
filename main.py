@@ -71,6 +71,14 @@ class DocumentClassifier(tk.Tk):
         self.set_bindings()
         self.update_menu()
 
+        current_tab = self.notebook.tab(self.notebook.select(), 'text')
+        if current_tab == 'Classify':
+            self.classify.refresh_classify()
+        if current_tab == 'Extract Text':
+            self.extract.refresh_extract()
+        if current_tab == 'View Data':
+            self.dataview.refresh_dataview()
+
     def update_menu(self):
         '''Set the state of the menu items depending on whether a project
         is currently open or not.
@@ -96,9 +104,6 @@ class DocumentClassifier(tk.Tk):
         user is currently viewing.
 
         Only called by refresh_settings().
-
-        TODO: Double check classify bindings + the check after filling in the functionality for the add_word function
-        TODO: Put all keyboard bindings here, from all tabs to have a better overview
         '''
         self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
         self.notebook.bind('<Control-n>', self.show_new_project_popup)
@@ -113,7 +118,7 @@ class DocumentClassifier(tk.Tk):
         self.extract.extract_text.bind('<Control-o>', self.open_project)
         self.extract.extract_text.bind('<Control-r>', self.sync_project)
 
-        if self.n_cats and self.classify.cat_names:
+        if self.project_currently_open() and self.classify.cat_names:
             if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
                 for i in range(self.n_cats):
                     self.bind(str(i+1), lambda event=0, b_num=i, b_name=self.classify.cat_names[i]: self.classify.add_word_to_cat(event, b_num, b_name))
@@ -176,8 +181,6 @@ class DocumentClassifier(tk.Tk):
         '''Purges all internal project data.
 
         Called by open_project() and by show_new_project_popup().
-
-        TODO: Make sure this purges the data from each tab as well
         '''
         self.title('Document Classifier')
         self.spell = create_spellchecker()
@@ -193,9 +196,11 @@ class DocumentClassifier(tk.Tk):
 
         self.classify.cat_names = None
         self.classify.cat_buttons = None
+        self.classify.text_files_done = list()
+        self.classify.text_tokens = list()
+        self.classify.words_togo = list()
         self.classify.previous_word_var.set('')
         self.classify.current_word_var.set('')
-        self.classify.next_word_var.set('')
 
         self.dataview.selected_data_view.set('File History')
         self.dataview.data_view_selector['values'] = ['File History']
@@ -265,9 +270,9 @@ class DocumentClassifier(tk.Tk):
         self.clear_current_project()
 
         if self.parse_project_info_file(folder):
+            self.spell = create_spellchecker(self.language)
             self.sync_project()
             self.refresh_settings()
-            self.spell = create_spellchecker(self.language)
             self.title(self.project_name)
             self.classify.refresh_classify()
             self.dataview.refresh_dataview()

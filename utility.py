@@ -138,16 +138,17 @@ def create_spellchecker(language='en'):
         return SpellChecker(local_dictionary=path_to_dict)
 
 def clean_text(text=None, extra_punctuation=""):
-    '''Removes punctuation from the text
-
-    TODO: Parse again to remove stop words (which should come from a file?)
+    '''Removes punctuation from the text and lowercases
+    it. Currently removes:
+    Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
 
     **Args**:
 
     * text (str): The text to be cleaned
 
-    * extra_punctuation (str): A string of punctuation marks to be removed
-    that are not already included in string.punctuation
+    * extra_punctuation (str): A string of punctuation marks
+    to be removed that are not already included in 
+    string.punctuation
 
     **Returns**:
     The cleaned text
@@ -156,11 +157,10 @@ def clean_text(text=None, extra_punctuation=""):
         return
 
     punctuation = string.punctuation + extra_punctuation + "Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘"
-    print("Punctuation to be removed:", punctuation)
     table = str.maketrans(dict.fromkeys(punctuation))
     text = text.translate(table)
 
-    return text
+    return text.lower()
 
 def get_context(tokens=None, word=None, context_range=3, show_all=False):
     '''Get the context of the first (or all) occurrence of a
