@@ -24,7 +24,7 @@ class DocumentClassifier(tk.Tk):
         self.font_size = 12
 
         style = ttk.Style()
-        style.configure('Example.TLabel', foreground='white', background='black')
+        style.configure('WORD.TLabel', foreground='red')
 
         # Project data
         self.spell = create_spellchecker()
@@ -199,8 +199,7 @@ class DocumentClassifier(tk.Tk):
         self.classify.text_files_done = list()
         self.classify.text_tokens = list()
         self.classify.words_togo = list()
-        self.classify.previous_word_var.set('')
-        self.classify.current_word_var.set('')
+        self.classify.insert_next_context()
 
         self.dataview.selected_data_view.set('File History')
         self.dataview.data_view_selector['values'] = ['File History']
@@ -316,6 +315,9 @@ class DocumentClassifier(tk.Tk):
 
         except FileNotFoundError as e:
             messagebox.showerror('Category file error', f'A category file is missing: {e}.')
+
+        except BrokenPipeError as e:
+            messagebox.showerror('Something weird happened, try synchronizing the project again.')
 
     def sync_filehistory(self):
         '''Adds the filenames present in self.files_done, and not already 

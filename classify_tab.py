@@ -18,19 +18,36 @@ class ClassifyTab(tk.Frame):
         self.words_togo = list()
         self.text_tokens = list()
         self.text_files_done = list()
-        self.previous_word_var = tk.StringVar(self, value='')
-        self.current_word_var = tk.StringVar(self, value='')
 
         # GUI stuff
-        self.word_frame = ttk.Frame(self)
-        self.previous_word = ttk.Label(self.word_frame, textvar=self.previous_word_var)
-        self.current_word = ttk.Label(self.word_frame, textvar=self.current_word_var)
+        self.pc_frame = ttk.Frame(self)
+        self.cc_frame = ttk.Frame(self)
+
+        self.pc_words = list()
+        self.pc_labels = list()
+        self.cc_words = list()
+        self.cc_labels = list()
+        for i in range(5):
+            self.pc_words.append(tk.StringVar(self.pc_frame, value=''))
+            self.cc_words.append(tk.StringVar(self.cc_frame, value=''))
+        for i in range(5):
+            self.pc_labels.append(ttk.Label(self.pc_frame, textvar=self.pc_words[i]))
+            self.cc_labels.append(ttk.Label(self.cc_frame, textvar=self.cc_words[i]))
+
+        self.pc_labels[2].configure(style='WORD.TLabel')
+        self.cc_labels[2].configure(style='WORD.TLabel')
+
         self.buttons_frame = ttk.Frame(self)
 
         # Packing
-        self.previous_word.pack(side='top', fill='x', expand=1)
-        self.current_word.pack(side='top', fill='x', expand=1)
-        self.word_frame.pack(side='top', fill='both', expand=1)
+        for i in range(5):
+            self.pc_labels[i].pack(side='left', expand=1)
+        self.pc_frame.pack(side='top', fill='x', expand=1)
+
+        for i in range(5):
+            self.cc_labels[i].pack(side='left', expand=1)
+        self.cc_frame.pack(side='top', fill='x', expand=1)
+
         self.buttons_frame.pack(side='bottom', fill='both', expand=1)
 
     def refresh_classify(self):
@@ -56,43 +73,70 @@ class ClassifyTab(tk.Frame):
                 button.destroy()
         self.create_cat_buttons()
 
-    def add_word_to_cat(self, event, cat_num, cat_name):
+    def add_word_to_cat(self, event, catnum, catname):
         '''Add the current word to the corresponding category,
         depending on which button was pressed, and get the next word.
 
         Called by the user.
         '''
-        context = self.current_word_var.get().split()
-        word_index = int(len(context) / 2)
-        self.master.categories[cat_name].append(context[word_index])
+        self.master.categories[catname].append(self.cc_words[2].get())
+        print(self.master.categories)
         self.next_word()
 
-    def insert_next_context(self, context=None):
+    def insert_next_context(self, word=None, context=None):
         '''Set self.previous_word to show the value of
         self.current_word and set self.current_word to show the context.
-        If no context was given, set both to show nothing. Also
-        highlight the main word of the context.
+        If no context was given, set both to show nothing.
 
         **Args**:
 
-        * context (list): The context to show.
+        * word (str): The main word
+        * context (list of lists): The left and right context to show,
+        each containing up to two words.
         '''
-        if not context:
-            self.previous_word_var.set('')
-            self.current_word_var.set('')
-        else:
-            self.previous_word_var.set(self.current_word_var.get())
-            self.current_word_var.set(' '.join(context))
+        if not context and not word:
+            for i in range(5):
+                self.pc_words[i].set('')
+                self.cc_words[i].set('')
 
-    def next_word(self):
+        else:
+            for i in range(5):
+                self.pc_words[i].set(self.cc_words[i].get())
+
+            if len(context[0]) == 2:
+                self.cc_words[0].set(context[0][0])
+                self.cc_words[1].set(context[0][1])
+
+            if len(context[0]) == 1:
+                self.cc_words[0].set('')
+                self.cc_words[1].set(context[0][0])
+
+            if len(context[0]) == 0:
+                self.cc_words[0].set('')
+                self.cc_words[1].set('')
+
+            self.cc_words[2].set(word)
+
+            for i in [0,1]:
+                try:
+                    self.cc_words[3+i].set(context[1][i])
+                except IndexError as e:
+                    self.cc_words[3+i].set('')
+                    pass
+
+
+    def next_word(self, first=False):
         '''Get the next unclassified word and put it along with its
         context in self.current_word via self.insert_next_word().
 
         Called by add_word_to_cat() and refresh_classify().
+
+        **Args**:
+
+        * first (bool): Indicates that this is the first time the
+        function is called
         '''
         if self.master.project_currently_open():
-            if self.words_togo:
-                del self.words_togo[0]
 
             if not self.words_togo:
                 status = self.get_next_text()
@@ -103,8 +147,10 @@ class ClassifyTab(tk.Frame):
                     self.insert_next_context()
                     return
 
-            context = get_context(self.text_tokens, self.words_togo[0])
-            self.insert_next_context(context)
+            if self.words_togo:
+                self.words_togo = self.filter_tokens(self.words_togo)
+                context = get_context(self.text_tokens, self.words_togo[0])
+                self.insert_next_context(self.words_togo[0], context)
 
     def get_next_text(self):
         '''Get the next text from text_folder containing a word not yet 

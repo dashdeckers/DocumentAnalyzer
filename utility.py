@@ -162,7 +162,7 @@ def clean_text(text=None, extra_punctuation=""):
 
     return text.lower()
 
-def get_context(tokens=None, word=None, context_range=3, show_all=False):
+def get_context(tokens=None, word=None, context_range=2, show_all=False):
     '''Get the context of the first (or all) occurrence of a
     word in the tokenized text.
 
@@ -200,11 +200,12 @@ def get_context(tokens=None, word=None, context_range=3, show_all=False):
                 first = 0
             # Get context
             context = tokens[first:last]
+            context2 = [tokens[first:idx], tokens[idx+1:last]]
             # Either finish, or find the rest
             if show_all:
                 all_contexts.append(context)
             else:
-                return context
+                return context2
 
     return all_contexts
 
