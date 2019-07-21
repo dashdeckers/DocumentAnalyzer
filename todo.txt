@@ -1,10 +1,11 @@
 # TODO:
 
 # Pop up messages to warn for unsaved progress on close and more
-# Undo for spell corrections and for word classifications
-# self.language should be consistently the full version of the name ('German' vs 'de')
-# Make a dictionary of error(+etc) strings in utility
-# Dataview: make scrollable, add docs, overhaul
-# Better spellchecker
 # Minimize tk and ttk imports
+# Class docstrings
+# Support for .doc files
+
+# Undo for spell corrections and for word classifications
+# Better spellchecker
 # Make a manual
+# Make an .exe file with PyInstaller

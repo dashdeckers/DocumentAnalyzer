@@ -2,7 +2,10 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 from tkinter import messagebox as msg
-from utility import language_dict
+from utility import (
+    language_dict,
+    strings,
+)
 
 class CreateProject(tk.Toplevel):
     '''
@@ -22,7 +25,9 @@ class CreateProject(tk.Toplevel):
         self.catnum_label = tk.Label(self, text='Number of Categories')
         self.catnum_entry = tk.Entry(self)
 
-        self.create_button = tk.Button(self, text='Create Project', command=self.create_project)
+        self.create_button = tk.Button(self,
+                                       text='Create Project',
+                                       command=self.create_project)
         self.bind('<Return>', self.create_project)
         self.name_entry.focus()
 
@@ -38,45 +43,52 @@ class CreateProject(tk.Toplevel):
     def create_project(self, event=None):
         '''Sets the project name, number of categories and language based
         on user input, and then creates the popup window to determine category
-        names.
+        names. If the language was given as the two letter shortcut, convert
+        it to its full name.
         '''
         if self.valid_name() and self.valid_language() and self.valid_n_cats():
+            lang = self.lang_entry.get()
+            language = lang if len(lang) > 2 else language_dict[lang]
+
             self.master.project_name = self.name_entry.get()
-            self.master.language = self.lang_entry.get()
+            self.master.language = language
             self.master.n_cats = int(self.catnum_entry.get())
             self.destroy()
             SetCategoryNames(self.master)
 
     def valid_name(self):
-        '''Checks that the project name is valid. A project name can only contain
-        alphanumerical characters, spaces, hyphens or underscores.
+        '''Checks that the project name is valid. A project name can only
+        contain alphanumerical characters, spaces, hyphens or underscores.
 
         **Returns**:
         True if the name is valid.
         '''
         name = self.name_entry.get()
-        if not all(char.isalnum() or char.isspace() or char in ['_', '-'] for char in name):
-            msg.showerror('Invalid input error', 'Project name must be alphabetical, or with spaces, underscores or hyphens')
+        if not all(char.isalnum() 
+                    or char.isspace() 
+                    or char in ['_', '-'] 
+                    for char in name):
+            msg.showerror('Invalid input error', strings['invalid_name'])
             return False
         return True
 
     def valid_language(self):
-        '''Checks that the project language is valid. The language can only be one
-        of a predefined set of languages (see language_dict in utility), either in
-        form of the two letter shortcut or the full language name.
+        '''Checks that the project language is valid. The language can only be
+        one of a predefined set of languages (see language_dict in utility),
+        either in form of the two letter shortcut or the full language name.
 
         **Returns**:
         True if the language is valid.
         '''
         lang = self.lang_entry.get()
         if not lang.lower() in language_dict:
-            msg.showerror('Invalid input error', 'Invalid language')
+            msg.showerror('Invalid input error', strings['invalid_language'])
             return False
         return True
 
     def valid_n_cats(self):
-        '''Checks that the number of categories is valid. The number of categories
-        must be an integer.
+        '''Checks that the number of categories is valid. The number of
+        categories must be an integer.
 
         **Returns**:
         True if the name is valid.
@@ -86,7 +98,7 @@ class CreateProject(tk.Toplevel):
             return True
 
         except ValueError:
-            msg.showerror('Invalid input error', 'Number of categories must be an integer')
+            msg.showerror('Invalid input error', strings['invalid_n_cats'])
             return False
 
 class SetCategoryNames(tk.Toplevel):
@@ -118,7 +130,8 @@ class SetCategoryNames(tk.Toplevel):
 
     def create_cats(self, event=None):
         '''Sets the categories based on the user input, then calls
-        master.create_new_project() to create project folder from internal data.
+        master.create_new_project() to create project folder from internal
+        data.
         '''
         for i in range(self.master.n_cats):
             self.master.categories[self.entries[i].get()] = list()

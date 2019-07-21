@@ -3,6 +3,7 @@ from json import dumps
 from string import punctuation as string_punctuation
 from os.path import join
 from spellchecker import SpellChecker
+from tkinter.ttk import Label
 
 file_folder = 'PDF_Files'
 text_folder = 'Text_Files'
@@ -20,30 +21,97 @@ language_dict = {
     'fr' : 'french',
 }
 
-cat_infotext = '''These are the words that belong to the corresponding categories.
-If you want to edit them directly: Then save the project, close the
-program and open the corresponding text file located within the
-project folder. This text file can be edited to add multiple words
-to the wordlist directly, but make sure you put only one word per
-line'''
+strings = {
+    'default_text' : (
+        '''Open or create a project and then import files via the menu to '''
+        '''get started '''
+    ),
 
-filehist_infotext = '''This is the list of filenames that have already been extracted,
-that means the text has been retrieved from the file, possibly edited and corrected,
-and then saved. These filenames will be excluded from the extract step. To re-do
-a file that is on this list: Close the program, open the file history text file
-located within the project folder, remove that filename from the list, and then
-save the file.
-'''
+    'cat_infotext' : (
+        '''These are the words that belong to the corresponding categories.'''
+        '''If you want to edit them directly: Then save the project, close '''
+        '''the program and open the corresponding text file located within '''
+        '''the project folder. This text file can be edited to add multiple '''
+        '''words to the wordlist directly, but make sure you put only one '''
+        '''word per line'''
+    ),
 
+    'filehist_infotext' : (
+        '''This is the list of filenames that have already been extracted, '''
+        '''that means the text has been retrieved from the file, possibly '''
+        '''edited and corrected, and then saved. These filenames will be '''
+        '''excluded from the extract step. To re-do a file that is on this '''
+        '''list: Close the program, open the file history text file located '''
+        '''within the project folder, remove that filename from the list, '''
+        '''and then save the file.'''
+    ),
+
+    'p_name_err' : 'First line must start with "Project_name:"',
+    'n_cats_err' : 'Second line must start with "Number_of_categories:"',
+    'p_lang_err' : 'Third line must start with "Project_language:"',
+    'blank_line_err'   : 'Fourth line must be emmpty',
+    'folder_name_err'  : 'Folder name must be equal to the project name',
+
+    'n_cat_lines_err' : (
+        '''Number_of_categories not consistent with number of lines '''
+        '''describing category names'''
+    ),
+
+    'n_cats_value_err'  : (
+        '''Invalid "Number_of_categories" value in project info file.'''
+        '''Must be an integer!'''
+    ),
+
+    'assertion_err' : lambda e: ( '''Problem with the project info file'''
+        f'''structure: {e}.'''),
+
+    'project_file_missing': (
+        '''The project info file (project_info.txt) is missing.'''
+        '''Is this a valid project folder?'''
+    ),
+
+    'cat_file_missing' : lambda e: f'A category file is missing: {e}.',
+
+    'filehistory_missing' : lambda e: ('''The file history file is '''
+        f'''missing: {e}.'''
+    ),
+
+    'broken_pipe_err' : 'Something weird happened, double check your work.',
+
+    'filehist_inconsistency' : lambda inc_list: ('''There are files listed '''
+         '''in the filehistory file that are not present in the files '''
+        f'''folder: {[f for f in inc_list]}.'''
+    ),
+
+    'invalid_extension' : lambda inv_files: ('''File must be either pdf, '''
+        f'''txt or doc. Skipping: {[f for f in inv_files]}.'''
+    ),
+
+    'invalid_name' : (
+        '''Project name must be alphabetical, or with spaces, underscores'''
+        '''or hyphens'''
+    ),
+
+    'invalid_language' : 'Invalid language',
+
+    'invalid_n_cats' : 'Number of categories must be an integer',
+}
+
+class WrappingLabel(Label):
+    '''A Label that automatically adjusts the wrap to the window size'''
+    def __init__(self, master=None, **kwargs):
+        Label.__init__(self, master, **kwargs)
+        self.bind('<Configure>',
+                  lambda e: self.configure(wraplength=self.winfo_width() - 20))
 
 def text_extracter(path_to_file=None):
     '''Extracts text from a pdf, doc or txt file.
 
-    TODO: Add support for .doc files
+    TODO: Add support for .doc files.
 
     **Args**:
 
-    * path_to_file (str): The path to the file to be processed
+    * path_to_file (str): The path to the file to be processed.
 
     **Returns**:
     The extracted text as a string, None if something went wrong.
@@ -79,10 +147,10 @@ def create_dictionary(path_to_file=None):
     **Args**:
 
     * path_to_file (str): The path to a .txt file containing
-    the columns (words, frequencies)
+    the columns (words, frequencies).
 
     **Returns**:
-    A string containing the path to the .dict file
+    A string containing the path to the .dict file.
     '''
     try:
         if not path_to_file:
@@ -113,15 +181,15 @@ def create_dictionary(path_to_file=None):
         print(e)
 
 def create_spellchecker(language='en'):
-    '''Creates a SpellChecker object
+    '''Creates a SpellChecker object.
 
     **Args**:
 
     * language (str): The language that the spellchecker
-    should be able to make corrections for
+    should be able to make corrections for.
 
     **Returns** 
-    A SpellChecker object
+    A SpellChecker object.
     '''
     language = language.lower()
     if language in language_dict and len(language) != 2:
@@ -147,14 +215,14 @@ def clean_text(text=None, extra_punctuation=""):
 
     **Args**:
 
-    * text (str): The text to be cleaned
+    * text (str): The text to be cleaned.
 
     * extra_punctuation (str): A string of punctuation marks
     to be removed that are not already included in 
-    string.punctuation
+    string.punctuation.
 
     **Returns**:
-    The cleaned text
+    The cleaned text.
     '''
     if not text:
         return

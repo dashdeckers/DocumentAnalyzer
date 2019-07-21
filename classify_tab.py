@@ -33,8 +33,10 @@ class ClassifyTab(tk.Frame):
             self.pc_words.append(tk.StringVar(self.pc_frame, value=''))
             self.cc_words.append(tk.StringVar(self.cc_frame, value=''))
         for i in range(5):
-            self.pc_labels.append(ttk.Label(self.pc_frame, textvar=self.pc_words[i]))
-            self.cc_labels.append(ttk.Label(self.cc_frame, textvar=self.cc_words[i]))
+            self.pc_labels.append(ttk.Label(self.pc_frame,
+                                            textvar=self.pc_words[i]))
+            self.cc_labels.append(ttk.Label(self.cc_frame,
+                                            textvar=self.cc_words[i]))
 
         self.pc_labels[2].configure(style='WORD.TLabel')
         self.cc_labels[2].configure(style='WORD.TLabel')
@@ -65,16 +67,16 @@ class ClassifyTab(tk.Frame):
         if self.get_next_text() == 'Working':
             self.next_word()
 
-        if self.cat_buttons:
-            for button in self.cat_buttons:
-                button.destroy()
+        self.destroy_cat_buttons()
         self.create_cat_buttons()
 
-    def add_word_to_cat(self, event, catnum, catname):
+    def add_word(self, event, catname):
         '''Add the current word to the corresponding category,
         depending on which button was pressed, and get the next word.
         '''
-        self.master.categories[catname].append(self.cc_words[2].get())
+        word = self.cc_words[2].get()
+        if not word == 'Finished!':
+            self.master.categories[catname].append(word)
         self.next_word()
 
     def insert_next_context(self, word=None, context=None):
@@ -134,7 +136,7 @@ class ClassifyTab(tk.Frame):
         '''
         if self.master.project_currently_open():
 
-            self.words_togo = self.filter_tokens(self.words_togo)
+            self.words_togo = self.filter(self.words_togo)
 
             if not self.words_togo:
                 status = self.get_next_text()
@@ -163,20 +165,20 @@ class ClassifyTab(tk.Frame):
         'Done' if it found a text but no unclassified words.
         '''
         if self.master.project_currently_open():
-            files_directory = join('.', self.master.project_name, text_folder)
-            files = [file for file in listdir(files_directory) if isfile(join(files_directory, file))]
+            f_dir = join('.', self.master.project_name, text_folder)
+            files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))]
 
             if not files:
                 return 'Empty'
 
             for file in files:
                 if file.endswith('.txt') and file not in self.text_files_done:
-                    with open(join(files_directory, file), 'r') as text_file:
+                    with open(join(f_dir, file), 'r') as text_file:
                         text_tokens = text_file.read().split()
                         for word in text_tokens:
                             if not self.is_in_wordlists(word):
                                 self.text_tokens = text_tokens
-                                self.words_togo = self.filter_tokens(text_tokens)
+                                self.words_togo = self.filter(text_tokens)
                                 return 'Working'
                     self.text_files_done.append(file)
             return 'Done'
@@ -197,7 +199,7 @@ class ClassifyTab(tk.Frame):
                 return True
         return False
 
-    def filter_tokens(self, tokens):
+    def filter(self, tokens):
         '''Filters a tokenized text to remove all the words that have
         already been categorized.
 
@@ -214,6 +216,13 @@ class ClassifyTab(tk.Frame):
                 words_togo.append(word)
         return words_togo
 
+    def destroy_cat_buttons(self):
+        '''Destroy the buttons that add the current word to a specific
+        category.'''
+        if self.cat_buttons:
+            for button in self.cat_buttons:
+                button.destroy()
+
     def create_cat_buttons(self):
         '''Create the buttons that add the current word to a specific
         category. It creates them dynamically and arranges them in as
@@ -222,7 +231,14 @@ class ClassifyTab(tk.Frame):
         if self.master.project_currently_open():
             self.cat_names = list(self.master.categories.keys())
             self.cat_buttons = list()
+
             for i in range(self.master.n_cats):
-                self.cat_buttons.append(ttk.Button(self.buttons_frame, text=self.cat_names[i] + f' ({i+1})', command=lambda event=0, b_num=i, b_name=self.cat_names[i]: self.add_word_to_cat(event, b_num, b_name)))
+                catname = self.cat_names[i]
+                func = lambda _, c=catname: self.add_word(_, c)
+                self.cat_buttons.append(ttk.Button(self.buttons_frame,
+                                                   text=f'{catname} ({i+1})',
+                                                   command=func))
+
             for i in range(self.master.n_cats):
-                self.cat_buttons[i].grid(row=int(i/self.max_button_cols), column=i%self.max_button_cols)
+                self.cat_buttons[i].grid(row=int(i / self.max_button_cols),
+                                         column=i % self.max_button_cols)

@@ -13,6 +13,7 @@ from utility import (
     create_spellchecker,
     file_folder,
     text_folder,
+    strings,
 )
 
 class DocumentClassifier(tk.Tk):
@@ -27,7 +28,8 @@ class DocumentClassifier(tk.Tk):
         self.font_size = 12
 
         style = ttk.Style()
-        style.configure('WORD.TLabel', foreground='red')
+        style.configure('WORD.TLabel',
+                        foreground='red')
 
         # Project data
         self.spell = create_spellchecker()
@@ -46,15 +48,27 @@ class DocumentClassifier(tk.Tk):
         # Menu
         self.menu = tk.Menu(self)
         self.menu_project = tk.Menu(self.menu, tearoff=0)
-        self.menu_project.add_command(label='Create new project', command=self.show_new_project_popup, accelerator='Ctrl+N')
-        self.menu_project.add_command(label='Open existing project', command=self.open_project, accelerator='Ctrl+O')
-        self.menu_project.add_command(label='Synchronize current project', command=self.sync_project, accelerator='Ctrl+R')
         self.menu.add_cascade(label='Project', menu=self.menu_project)
         self.menu_edit = tk.Menu(self.menu, tearoff=0)
-        self.menu_edit.add_command(label='Save & next document', command=self.extract.next_file, underline=1, accelerator='Ctrl+S')
-        self.menu_edit.add_command(label='Redo current document', command=self.extract.reparse)
-        self.menu_edit.add_command(label='Spellcheck', command=self.extract.spellcheck, underline=1, accelerator='Ctrl+P')
         self.menu.add_cascade(label='Edit', menu=self.menu_edit)
+
+        self.menu_project.add_command(label='Create new project',
+                                      command=self.show_new_project_popup,
+                                      accelerator='Ctrl+N')
+        self.menu_project.add_command(label='Open existing project',
+                                      command=self.open_project,
+                                      accelerator='Ctrl+O')
+        self.menu_project.add_command(label='Synchronize current project',
+                                      command=self.sync_project,
+                                      accelerator='Ctrl+R')
+        self.menu_edit.add_command(label='Save & next document',
+                                   command=self.extract.next_file,
+                                   accelerator='Ctrl+S')
+        self.menu_edit.add_command(label='Redo current document',
+                                   command=self.extract.reparse)
+        self.menu_edit.add_command(label='Spellcheck',
+                                   command=self.extract.spellcheck,
+                                   accelerator='Ctrl+P')
 
         # Packing
         self.notebook.add(self.extract, text='Extract Text')
@@ -107,18 +121,23 @@ class DocumentClassifier(tk.Tk):
         self.notebook.bind('<Control-o>', self.open_project)
         self.notebook.bind('<Control-r>', self.sync_project)
 
-        self.extract.extract_text.bind('<ButtonRelease-1>', self.extract.show_corrections)
-        self.extract.extract_text.bind('<Escape>', self.extract.hide_corrections)
-        self.extract.extract_text.bind('<FocusOut>', self.extract.hide_corrections)
         self.extract.extract_text.bind('<Control-p>', self.extract.spellcheck)
         self.extract.extract_text.bind('<Control-s>', self.extract.next_file)
         self.extract.extract_text.bind('<Control-o>', self.open_project)
         self.extract.extract_text.bind('<Control-r>', self.sync_project)
+        self.extract.extract_text.bind('<ButtonRelease-1>',
+                                       self.extract.show_corrections)
+        self.extract.extract_text.bind('<Escape>',
+                                       self.extract.hide_corrections)
+        self.extract.extract_text.bind('<FocusOut>',
+                                       self.extract.hide_corrections)
 
         if self.project_currently_open() and self.classify.cat_names:
             if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
                 for i in range(self.n_cats):
-                    self.bind(str(i+1), lambda event=0, b_num=i, b_name=self.classify.cat_names[i]: self.classify.add_word_to_cat(event, b_num, b_name))
+                    catname = self.classify.cat_names[i]
+                    func = lambda _, c=catname: self.classify.add_word(_, c)
+                    self.bind(str(i+1), func)
             else:
                 for i in range(self.n_cats):
                     self.unbind(str(i+1))
@@ -136,15 +155,14 @@ class DocumentClassifier(tk.Tk):
     def create_new_project(self):
         '''Creates a new project from internal data from user input obtained
         from popup windows.
-
-        TODO: Make sure to write the full language name, and not the shortcut.
         '''
         mkdir(join('.', self.project_name))
         mkdir(join('.', self.project_name, file_folder))
         mkdir(join('.', self.project_name, text_folder))
         
         # Create project info file
-        with open(join('.', self.project_name, 'project_info.txt'), 'w') as file:
+        project_info_path = join('.', self.project_name, 'project_info.txt')
+        with open(project_info_path, 'w') as file:
             file.write(
                 f'Project_name: {self.project_name}\n'
                 f'Number_of_categories: {self.n_cats}\n'
@@ -155,11 +173,13 @@ class DocumentClassifier(tk.Tk):
                 file.write(f'Category_{catnum}_name: {catname}\n')
 
                 # Create the category / wordlist files
-                with open(join('.', self.project_name, f'{catname}.txt'), 'w') as catfile:
+                catfile_path = join('.', self.project_name, f'{catname}.txt')
+                with open(catfile_path, 'w') as catfile:
                     pass
 
         # Create file history file
-        with open(join('.', self.project_name, 'filehistory.txt'), 'w') as file:
+        filehistory_path = join('.', self.project_name, 'filehistory.txt')
+        with open(filehistory_path, 'w') as file:
             pass
 
         self.refresh_settings()
@@ -185,6 +205,7 @@ class DocumentClassifier(tk.Tk):
         self.extract.filenumber_var.set('')
 
         self.classify.cat_names = None
+        self.classify.destroy_cat_buttons()
         self.classify.cat_buttons = None
         self.classify.text_files_done = list()
         self.classify.text_tokens = list()
@@ -216,31 +237,36 @@ class DocumentClassifier(tk.Tk):
                 lines = [line.split() for line in file.read().splitlines()]
 
             # Make sure the main data has the valid format and parse it
-            assert lines[0][0] == 'Project_name:', 'First line must start with "Project_name:"'
-            assert lines[1][0] == 'Number_of_categories:', 'Second line must start with "Number_of_categories:"'
-            assert lines[2][0] == 'Project_language:', 'Third line must start with "Project_language:"'
-            assert not lines[3], 'Fourth line must be emmpty'
-            assert lines[0][1] == split(folder)[-1], 'Folder name must be equal to the project name'
+            assert lines[0][0] == 'Project_name:', strings['p_name_err']
+            assert lines[1][0] == 'Number_of_categories:', strings['n_cat_err']
+            assert lines[2][0] == 'Project_language:', strings['p_lang_err']
+            assert not lines[3], strings['blank_line_err']
+            assert lines[0][1] == split(folder)[-1], strings['folder_name_err']
+
             self.n_cats = int(lines[1][1])
             self.project_name = lines[0][1]
             self.language = lines[2][1]
 
-            # Make sure the category data has the valid format
-            assert len(lines) == 4 + self.n_cats, 'Number_of_categories not consistent with number of lines describing category names'
+            # Make sure the category data has the valid format and parse it
+            assert len(lines) == 4 + self.n_cats, strings['n_cat_lines_err']
+
             for cat in range(4, 4 + self.n_cats):
                 self.categories[lines[cat][1]] = list()
             return True
 
         except ValueError:
-            messagebox.showerror('Project info file error', f'Invalid "Number_of_categories" value in project info file. Must be an integer!')
+            messagebox.showerror('Project info file error',
+                strings['n_cats_value_err'])
             return False
 
         except AssertionError as e:
-            messagebox.showerror('Project info file error', f'Problem with the project info file structure: {e}.')
+            messagebox.showerror('Project info file error',
+                strings['assertion_err'](e))
             return False
 
         except FileNotFoundError as e:
-            messagebox.showerror('Project info file error', f'The project info file (project_info.txt) is missing. Is this a valid project folder?')
+            messagebox.showerror('Project info file error',
+                strings['project_file_missing'])
             return False
 
     def open_project(self, event=None):
@@ -281,7 +307,9 @@ class DocumentClassifier(tk.Tk):
         '''
         try:
             for catname in list(self.categories.keys()):
-                with open(join('.', self.project_name, catname + '.txt'), 'r') as file:
+                catfile_path = join('.', self.project_name, catname + '.txt')
+
+                with open(catfile_path, 'r') as file:
                     catfile_contents = file.read().splitlines()
                     combined = self.categories[catname] + catfile_contents
                     no_duplicates = list()
@@ -289,35 +317,40 @@ class DocumentClassifier(tk.Tk):
                         if word not in no_duplicates:
                             no_duplicates.append(word)
 
-                with open(join('.', self.project_name, catname + '.txt'), 'w') as file:
+                with open(catfile_path, 'w') as file:
                     for word in no_duplicates:
                         file.write(word + '\n')
 
                 self.categories[catname] = no_duplicates
 
         except FileNotFoundError as e:
-            messagebox.showerror('Category file error', f'A category file is missing: {e}.')
+            messagebox.showerror('Category file error', 
+                strings['cat_file_missing'](e))
 
         except BrokenPipeError as e:
-            messagebox.showerror('Something weird happened, try synchronizing the project again.')
+            messagebox.showerror('Unknown Error',
+                strings['broken_pipe_err'])
 
     def sync_filehistory(self):
         '''Adds the filenames present in self.files_done, and not already 
         present in filehistory.txt, to filehistory.txt.
         '''
         try:
-            with open(join('.', self.project_name, 'filehistory.txt'), 'r') as file:
-                filehistory = file.read().splitlines()
-                new_filehistory = filehistory + [file for file in self.files_done if file not in filehistory]
+            filehistory_path = join('.', self.project_name, 'filehistory.txt')
 
-            with open(join('.', self.project_name, 'filehistory.txt'), 'w') as file:
-                for filename in new_filehistory:
+            with open(filehistory_path, 'r') as file:
+                fh = file.read().splitlines()
+                new_fh = fh + [f for f in self.files_done if f not in fh]
+
+            with open(filehistory_path, 'w') as file:
+                for filename in new_fh:
                     file.write(filename + '\n')
 
-            self.files_done = new_filehistory
+            self.files_done = new_fh
 
         except FileNotFoundError as e:
-            messagebox.showerror('Filehistory file error', f'The file history file is missing: {e}.')
+            messagebox.showerror('Filehistory file error',
+                strings['filehistory_missing'](e))
 
     def sync_files(self):
         '''Synchronises the files in the project folder (file_folder),
@@ -333,9 +366,9 @@ class DocumentClassifier(tk.Tk):
         '''
         try:
             valid_extension = ('.pdf', '.txt', '.doc')
-            files_directory = join('.', self.project_name, file_folder)
+            f_dir = join('.', self.project_name, file_folder)
 
-            files = [file for file in listdir(files_directory) if isfile(join(files_directory, file))]
+            files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))]
             valid_files = list()
             invalid_files = list()
             for file in files:
@@ -344,22 +377,27 @@ class DocumentClassifier(tk.Tk):
                 else:
                     invalid_files.append(file)
 
-            with open(join('.', self.project_name, 'filehistory.txt'), 'r') as file:
+            filehistory_path = join('.', self.project_name, 'filehistory.txt')
+            with open(filehistory_path, 'r') as file:
                 filehistory = file.read().splitlines()
 
-            self.files_done = [file for file in valid_files if file in filehistory]
-            self.files_todo = [file for file in valid_files if file not in filehistory]
+            self.files_done = [f for f in valid_files if f in filehistory]
+            self.files_todo = [f for f in valid_files if f not in filehistory]
 
-            filehistory_inconsistencies = [file for file in filehistory if file not in self.files_done]
-            if filehistory_inconsistencies:
-                messagebox.showerror('Filehistory error', f'There are files listed in filehistory that are not in the files folder: {[f for f in filehistory_inconsistencies]}.')
+            inconsistencies = [f for f in filehistory 
+                                    if f not in self.files_done]
+            if inconsistencies:
+                messagebox.showerror('Filehistory error',
+                    strings['filehist_inconsistency'](inconsistencies))
             if invalid_files:
-                messagebox.showerror('Invalid extension', f'File must be either pdf, txt or doc. Skipping: {[f for f in invalid_files]}.')
+                messagebox.showerror('Invalid extension',
+                    strings['invalid_extension'](invalid_files))
 
             self.extract.refresh_extract()
 
         except FileNotFoundError as e:
-            messagebox.showerror('Filehistory file error', f'The file history file is missing: {e}.')
+            messagebox.showerror('Filehistory file error',
+                strings['filehistory_missing'](e))
 
     def project_currently_open(self):
         '''Checks if a project is currently open.

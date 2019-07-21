@@ -9,6 +9,7 @@ from utility import (
     clean_text,
     file_folder,
     text_folder,
+    strings,
 )
 
 class ExtractTab(tk.Frame):
@@ -20,18 +21,26 @@ class ExtractTab(tk.Frame):
         self.master = master
 
         # Project data
-        self.default_text = 'Open or create a project and then import files via the menu to get started '
+        self.default_text = strings['default_text']
         self.filename_var = tk.StringVar(self, value='')
         self.filenumber_var = tk.StringVar(self, value='')
 
         # GUI stuff
         self.extract_filefield = ttk.Frame(self)
-        self.extract_filename = ttk.Label(self.extract_filefield, textvar=self.filename_var, anchor='w')
-        self.extract_filenumber = ttk.Label(self.extract_filefield, textvar=self.filenumber_var, anchor='e')
-        self.extract_text = tk.Text(self, font=(None, self.master.font_size), wrap='word')
+        self.extract_filename = ttk.Label(self.extract_filefield,
+                                          textvar=self.filename_var,
+                                          anchor='w')
+        self.extract_filenumber = ttk.Label(self.extract_filefield,
+                                            textvar=self.filenumber_var,
+                                            anchor='e')
+        self.extract_text = tk.Text(self,
+                                    font=(None, self.master.font_size),
+                                    wrap='word')
         self.scrollbar = tk.Scrollbar(self, orient='vertical')
         self.extract_text.configure(yscrollcommand=self.scrollbar.set)
-        self.extract_text.tag_configure("misspelled", foreground="red", underline=True)
+        self.extract_text.tag_configure("misspelled",
+                                        foreground="red",
+                                        underline=True)
         self.extract_text.insert('1.0', self.default_text)
         self.extract_text.focus_force()
 
@@ -46,7 +55,8 @@ class ExtractTab(tk.Frame):
         '''Sets the text in the textfield to either the default text or to the
         text extracted from the first file in the self.master.files_todo list
         if that list is not empty and a project is currently open. If text was
-        extracted, it runs a spellcheck on it. Also updates the fileprogress bar.
+        extracted, it runs a spellcheck on it. Also updates the fileprogress
+        bar.
         '''
         self.hide_corrections()
 
@@ -54,11 +64,16 @@ class ExtractTab(tk.Frame):
             # Don't do anything if we have already extracted the correct text.
             # We don't want to replace current spell-correction progress.
             if not self.filename_var.get() == self.master.files_todo[0]:
-                text = text_extracter(join('.', self.master.project_name, file_folder, self.master.files_todo[0]))
+                path_to_text = join('.',
+                                    self.master.project_name,
+                                    file_folder,
+                                    self.master.files_todo[0])
+                text = text_extracter(path_to_text)
                 text = clean_text(text)
                 self.extract_text.delete('1.0', 'end')
                 self.extract_text.insert('1.0', text)
-                # Add a space at the end to make sure the replace_word() function always works.
+                # Add a space at the end to make sure the replace_word()
+                # function always works.
                 self.extract_text.insert('end', ' ')
                 self.spellcheck()
         else:
@@ -69,32 +84,37 @@ class ExtractTab(tk.Frame):
 
     def update_fileprogress(self):
         '''Sets the current filename and the file progress on the fileprogress
-        bar below the extract tab. If there is no project currently open, these
-        values are blank.
+        bar below the extract tab. If there is no project currently open,
+        these values are blank.
         '''
-        num_files_done = len(self.master.files_done)
-        num_files_todo = len(self.master.files_todo)
+        n_done = len(self.master.files_done)
+        n_todo = len(self.master.files_todo)
+
         if self.master.project_currently_open():
             if self.master.files_todo:
                 self.filename_var.set(self.master.files_todo[0])
-                self.filenumber_var.set(f'{num_files_done+1}/{num_files_todo+num_files_done}')
+                self.filenumber_var.set(f'{n_done + 1}/{n_todo + n_done}')
             else:
                 self.filename_var.set('')
-                self.filenumber_var.set(f'{num_files_done}/{num_files_todo+num_files_done}')
+                self.filenumber_var.set(f'{n_done}/{n_todo + n_done}')
         else:
             self.filename_var.set('')
             self.filenumber_var.set('')
 
     def next_file(self, event=None):
-        '''Saves the text currently in the text field in the text_folder of the 
-        project using the same filename, and then replace the text with the
-        extracted text of the next file (or with the default text if there is
-        no next file).
+        '''Saves the text currently in the text field in the text_folder of
+        the project using the same filename, and then replace the text with
+        the extracted text of the next file (or with the default text if there
+        is no next file).
         '''
         if self.master.project_currently_open() and self.master.files_todo:
             text = self.extract_text.get('1.0', 'end')
             filename = splitext(self.filename_var.get())[0] + '.txt'
-            with open(join('.', self.master.project_name, text_folder, filename), 'w') as file:
+            path_to_text = join('.',
+                                self.master.project_name,
+                                text_folder,
+                                filename)
+            with open(path_to_text, 'w') as file:
                 file.write(text)
 
             self.master.files_done.append(self.master.files_todo[0])
@@ -103,12 +123,13 @@ class ExtractTab(tk.Frame):
         self.refresh_extract()
 
     def reparse(self):
-        '''Discard the text currently in the text field and replace it with the
-        extracted text of the next file. The user is prompted for confirmation.
-
-        # TODO: Fill this in
+        '''Discard the text currently in the text field and replace it with
+        the extracted text of the next file. The user is prompted for
+        confirmation.
         '''
-        print('Discarding text and parsing the file again')
+        self.filename_var.set('')
+        self.refresh_extract()
+
 
 
 
