@@ -1,4 +1,7 @@
-import PyPDF2, os, json, string
+from PyPDF2 import PdfFileReader
+from json import dumps
+from string import punctuation as string_punctuation
+from os.path import join
 from spellchecker import SpellChecker
 
 file_folder = 'PDF_Files'
@@ -51,7 +54,7 @@ def text_extracter(path_to_file=None):
 
         if path_to_file.endswith('.pdf'):
             with open(path_to_file, 'rb') as pdf:
-                pdfreader = PyPDF2.PdfFileReader(pdf)
+                pdfreader = PdfFileReader(pdf)
                 full_text = ""
                 for i in range(pdfreader.numPages):
                     page_text = pdfreader.getPage(i).extractText()
@@ -89,7 +92,7 @@ def create_dictionary(path_to_file=None):
 
         # Create the dictionary from the file
         freq_d = dict()
-        full_path = os.path.join('.', path_to_file)
+        full_path = join('.', path_to_file)
         with open(full_path, 'r') as file:
             for line in file:
                 tokens = line.split()
@@ -97,9 +100,9 @@ def create_dictionary(path_to_file=None):
 
         # Write the dictionary to a new file
         new_path_to_file = path_to_file[:-4] + '.dict'
-        full_path = os.path.join('.', new_path_to_file)
+        full_path = join('.', new_path_to_file)
         with open(full_path, 'w') as file:
-            file.write(json.dumps(freq_d))
+            file.write(dumps(freq_d))
 
         return full_path
 
@@ -128,7 +131,7 @@ def create_spellchecker(language='en'):
         return SpellChecker(language=language)
 
     else:
-        path_to_dict_text = os.path.join(".", f"{language}_full.txt")
+        path_to_dict_text = join(".", f"{language}_full.txt")
         path_to_dict = create_dictionary(path_to_dict_text)
 
         if not path_to_dict:
@@ -140,7 +143,7 @@ def create_spellchecker(language='en'):
 def clean_text(text=None, extra_punctuation=""):
     '''Removes punctuation from the text and lowercases
     it. Currently removes:
-    Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+    !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘
 
     **Args**:
 
@@ -156,7 +159,7 @@ def clean_text(text=None, extra_punctuation=""):
     if not text:
         return
 
-    punctuation = string.punctuation + extra_punctuation + "Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘"
+    punctuation = string_punctuation + extra_punctuation + "Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘"
     table = str.maketrans(dict.fromkeys(punctuation))
     text = text.translate(table)
 
@@ -179,7 +182,8 @@ def get_context(tokens=None, word=None, context_range=2, show_all=False):
     of all occurrences of the word.
 
     **Returns**
-    The context, or multiple contexts, as a list or list of lists.
+    The context, or multiple contexts, as a list of lists or a
+    list of lists of lists.
     '''
     if not tokens or not word:
         return
@@ -194,29 +198,17 @@ def get_context(tokens=None, word=None, context_range=2, show_all=False):
             first = idx - context_range
             last = idx + context_range + 1
             # Make sure they are not out of bounds
-            if last > len(tokens) - 1:
-                last = len(tokens) - 1
+            if last > len(tokens):
+                last = len(tokens)
             if first < 0:
                 first = 0
             # Get context
             context = tokens[first:last]
-            context2 = [tokens[first:idx], tokens[idx+1:last]]
+            context_split = [tokens[first:idx], tokens[idx+1:last]]
             # Either finish, or find the rest
             if show_all:
-                all_contexts.append(context)
+                all_contexts.append(context_split)
             else:
-                return context2
+                return context_split
 
     return all_contexts
-
-if __name__ == "__main__":
-    filename = "./Testing/PDF_Files/full.pdf"
-    filename1 = "./Testing/PDF_Files/test_pdf.pdf"
-    filename2 = "./Testing/Text_Files/Testing.txt"
-    dictfile = "./dict_50k.txt"
-    #print(extract_text(filename2))
-    #print(create_dictionary(dictfile))
-    text = text_extracter(filename)
-    tokens = clean_text(text)
-    print(" ".join(tokens))
-    pass

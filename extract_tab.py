@@ -1,15 +1,15 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-import os
+
+from os.path import join, splitext
 from functools import partial
+
 from utility import (
     text_extracter, 
     clean_text,
     file_folder,
     text_folder,
 )
-
-import time
 
 class ExtractTab(tk.Frame):
     '''
@@ -47,13 +47,6 @@ class ExtractTab(tk.Frame):
         text extracted from the first file in the self.master.files_todo list
         if that list is not empty and a project is currently open. If text was
         extracted, it runs a spellcheck on it. Also updates the fileprogress bar.
-
-        Called by:
-        master.create_new_project()
-        master.clear_current_project()
-        master.open_project()
-        master.sync_files()
-        next_file()
         '''
         self.hide_corrections()
 
@@ -61,7 +54,7 @@ class ExtractTab(tk.Frame):
             # Don't do anything if we have already extracted the correct text.
             # We don't want to replace current spell-correction progress.
             if not self.filename_var.get() == self.master.files_todo[0]:
-                text = text_extracter(os.path.join('.', self.master.project_name, file_folder, self.master.files_todo[0]))
+                text = text_extracter(join('.', self.master.project_name, file_folder, self.master.files_todo[0]))
                 text = clean_text(text)
                 self.extract_text.delete('1.0', 'end')
                 self.extract_text.insert('1.0', text)
@@ -78,8 +71,6 @@ class ExtractTab(tk.Frame):
         '''Sets the current filename and the file progress on the fileprogress
         bar below the extract tab. If there is no project currently open, these
         values are blank.
-
-        Only called by refresh_extract().
         '''
         num_files_done = len(self.master.files_done)
         num_files_todo = len(self.master.files_todo)
@@ -99,13 +90,11 @@ class ExtractTab(tk.Frame):
         project using the same filename, and then replace the text with the
         extracted text of the next file (or with the default text if there is
         no next file).
-
-        Called by the user.
         '''
         if self.master.project_currently_open() and self.master.files_todo:
             text = self.extract_text.get('1.0', 'end')
-            filename = os.path.splitext(self.filename_var.get())[0] + '.txt'
-            with open(os.path.join('.', self.master.project_name, text_folder, filename), 'w') as file:
+            filename = splitext(self.filename_var.get())[0] + '.txt'
+            with open(join('.', self.master.project_name, text_folder, filename), 'w') as file:
                 file.write(text)
 
             self.master.files_done.append(self.master.files_todo[0])
@@ -117,7 +106,7 @@ class ExtractTab(tk.Frame):
         '''Discard the text currently in the text field and replace it with the
         extracted text of the next file. The user is prompted for confirmation.
 
-        Called by the user.
+        # TODO: Fill this in
         '''
         print('Discarding text and parsing the file again')
 
@@ -130,13 +119,14 @@ class ExtractTab(tk.Frame):
     # TODO: Replace this with a better spell checker
 
     def get_corrections(self, word):
-        t0 = time.time()
+        from time import time
+        t0 = time()
         # TODO: This needs to be filtered to show suggestions ranked based on distance
         candidates = list(self.master.spell.candidates(word))
-        print(f'Candidates after {time.time()-t0}')
+        print(f'Candidates after {time()-t0}')
         best_guess = self.master.spell.correction(word)
         candidates.remove(best_guess)
-        print(f'Best guess after {time.time()-t0}')
+        print(f'Best guess after {time()-t0}')
         if len(candidates) > 5:
             return [best_guess] + candidates[:5]
         else:

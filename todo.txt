@@ -4,25 +4,7 @@
 # Undo for spell corrections and for word classifications
 # self.language should be consistently the full version of the name ('German' vs 'de')
 # Make a dictionary of error(+etc) strings in utility
-# Remove 'called by' stuff from docs
-# Fixed context range = one label per word!
-# Dataview: make scrollable
-
-double check classify docs
-
-'''
-
-Plan:
-
-Overhaul classify and dataview tabs
-Make sure to update set_bindings and clear_current_project during this
-Do it properly with docstrings
-
-Do TODO's
-
-Replace spellchecker
-
-DONE
-
-
-'''
+# Dataview: make scrollable, add docs, overhaul
+# Better spellchecker
+# Minimize tk and ttk imports
+# Make a manual

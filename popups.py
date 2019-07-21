@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+
 from tkinter import messagebox as msg
 from utility import language_dict
 
@@ -38,9 +39,6 @@ class CreateProject(tk.Toplevel):
         '''Sets the project name, number of categories and language based
         on user input, and then creates the popup window to determine category
         names.
-
-        TODO: Ask for user confirmation before even showing this popup, data is
-        lost otherwise!
         '''
         if self.valid_name() and self.valid_language() and self.valid_n_cats():
             self.master.project_name = self.name_entry.get()
@@ -51,13 +49,13 @@ class CreateProject(tk.Toplevel):
 
     def valid_name(self):
         '''Checks that the project name is valid. A project name can only contain
-        alphabetical characters, spaces, hyphens or underscores.
+        alphanumerical characters, spaces, hyphens or underscores.
 
         **Returns**:
         True if the name is valid.
         '''
         name = self.name_entry.get()
-        if not all(char.isalpha() or char.isspace() or char in ['_', '-'] for char in name):
+        if not all(char.isalnum() or char.isspace() or char in ['_', '-'] for char in name):
             msg.showerror('Invalid input error', 'Project name must be alphabetical, or with spaces, underscores or hyphens')
             return False
         return True
@@ -69,8 +67,6 @@ class CreateProject(tk.Toplevel):
 
         **Returns**:
         True if the language is valid.
-
-        TODO: Convert the language to full language name first.
         '''
         lang = self.lang_entry.get()
         if not lang.lower() in language_dict:

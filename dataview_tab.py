@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+
 from utility import cat_infotext, filehist_infotext
 
 class DataviewTab(tk.Frame):

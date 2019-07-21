@@ -1,7 +1,10 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-import os
+
+from os import listdir, mkdir
+from os.path import join, isfile, split
 from tkinter import messagebox, filedialog
+
 from extract_tab import ExtractTab
 from classify_tab import ClassifyTab
 from dataview_tab import DataviewTab
@@ -64,9 +67,7 @@ class DocumentClassifier(tk.Tk):
 
     def refresh_settings(self, event=None):
         '''Set both the status for each menu item as well as the
-        correct keyboard bindings.
-
-        Called every time the tab is switched and upon initialization.
+        correct keyboard bindings and refresh the current tab.
         '''
         self.set_bindings()
         self.update_menu()
@@ -82,8 +83,6 @@ class DocumentClassifier(tk.Tk):
     def update_menu(self):
         '''Set the state of the menu items depending on whether a project
         is currently open or not.
-
-        Only called by refresh_settings().
         '''
         if not self.project_currently_open():
             self.menu_project.entryconfig(2, state='disabled')
@@ -102,8 +101,6 @@ class DocumentClassifier(tk.Tk):
     def set_bindings(self):
         '''Set the appropriate keyboard bindings depending on which tab the
         user is currently viewing.
-
-        Only called by refresh_settings().
         '''
         self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
         self.notebook.bind('<Control-n>', self.show_new_project_popup)
@@ -130,8 +127,6 @@ class DocumentClassifier(tk.Tk):
         '''Asks for user confirmation before clearing the current project
         and creating a new one via popup windows.
 
-        Called by the user.
-
         TODO: Ask for confirmation
         '''
         if True:
@@ -142,17 +137,14 @@ class DocumentClassifier(tk.Tk):
         '''Creates a new project from internal data from user input obtained
         from popup windows.
 
-        Called by the SetCategoryNames popup, which is called by the
-        CreateProject popup.
-
         TODO: Make sure to write the full language name, and not the shortcut.
         '''
-        os.mkdir(os.path.join('.', self.project_name))
-        os.mkdir(os.path.join('.', self.project_name, file_folder))
-        os.mkdir(os.path.join('.', self.project_name, text_folder))
+        mkdir(join('.', self.project_name))
+        mkdir(join('.', self.project_name, file_folder))
+        mkdir(join('.', self.project_name, text_folder))
         
         # Create project info file
-        with open(os.path.join('.', self.project_name, 'project_info.txt'), 'w') as file:
+        with open(join('.', self.project_name, 'project_info.txt'), 'w') as file:
             file.write(
                 f'Project_name: {self.project_name}\n'
                 f'Number_of_categories: {self.n_cats}\n'
@@ -163,11 +155,11 @@ class DocumentClassifier(tk.Tk):
                 file.write(f'Category_{catnum}_name: {catname}\n')
 
                 # Create the category / wordlist files
-                with open(os.path.join('.', self.project_name, f'{catname}.txt'), 'w') as catfile:
+                with open(join('.', self.project_name, f'{catname}.txt'), 'w') as catfile:
                     pass
 
         # Create file history file
-        with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'w') as file:
+        with open(join('.', self.project_name, 'filehistory.txt'), 'w') as file:
             pass
 
         self.refresh_settings()
@@ -179,8 +171,6 @@ class DocumentClassifier(tk.Tk):
 
     def clear_current_project(self):
         '''Purges all internal project data.
-
-        Called by open_project() and by show_new_project_popup().
         '''
         self.title('Document Classifier')
         self.spell = create_spellchecker()
@@ -213,8 +203,6 @@ class DocumentClassifier(tk.Tk):
         '''Parses a project_info.txt file and incorporates the contained
         information.
 
-        Only called by open_project().
-
         **Args**:
 
         * folder (str): The path to the project folder.
@@ -224,7 +212,7 @@ class DocumentClassifier(tk.Tk):
         '''
         try:
             # Read data
-            with open(os.path.join(folder, 'project_info.txt'), 'r') as file:
+            with open(join(folder, 'project_info.txt'), 'r') as file:
                 lines = [line.split() for line in file.read().splitlines()]
 
             # Make sure the main data has the valid format and parse it
@@ -232,7 +220,7 @@ class DocumentClassifier(tk.Tk):
             assert lines[1][0] == 'Number_of_categories:', 'Second line must start with "Number_of_categories:"'
             assert lines[2][0] == 'Project_language:', 'Third line must start with "Project_language:"'
             assert not lines[3], 'Fourth line must be emmpty'
-            assert lines[0][1] == os.path.split(folder)[-1], 'Folder name must be equal to the project name'
+            assert lines[0][1] == split(folder)[-1], 'Folder name must be equal to the project name'
             self.n_cats = int(lines[1][1])
             self.project_name = lines[0][1]
             self.language = lines[2][1]
@@ -258,8 +246,6 @@ class DocumentClassifier(tk.Tk):
     def open_project(self, event=None):
         '''Open a project folder selected by the user.
 
-        Called by the user.
-
         TODO: Test if unsaved progress exists, notify the user.
         '''
         folder = filedialog.askdirectory()
@@ -271,19 +257,17 @@ class DocumentClassifier(tk.Tk):
         if self.parse_project_info_file(folder):
             self.spell = create_spellchecker(self.language)
             self.sync_project()
-            self.refresh_settings()
             self.title(self.project_name)
             self.classify.refresh_classify()
             self.dataview.refresh_dataview()
             self.extract.refresh_extract()
+            self.refresh_settings()
         else:
             self.clear_current_project()
 
     def sync_project(self, event=None):
         '''Synchronize the project by synchronizing wordlists, filehistory
         and category wordlists.
-
-        Called by the user and by open_project().
         '''
         if self.project_currently_open():
             self.sync_wordlists()
@@ -294,12 +278,10 @@ class DocumentClassifier(tk.Tk):
         '''Synchronizes the wordlists such that the category files contain
         the combined elements of the internal wordlists (self.categories) 
         and the category files, not allowing duplicates.
-
-        Only called by sync_project().
         '''
         try:
             for catname in list(self.categories.keys()):
-                with open(os.path.join('.', self.project_name, catname + '.txt'), 'r') as file:
+                with open(join('.', self.project_name, catname + '.txt'), 'r') as file:
                     catfile_contents = file.read().splitlines()
                     combined = self.categories[catname] + catfile_contents
                     no_duplicates = list()
@@ -307,7 +289,7 @@ class DocumentClassifier(tk.Tk):
                         if word not in no_duplicates:
                             no_duplicates.append(word)
 
-                with open(os.path.join('.', self.project_name, catname + '.txt'), 'w') as file:
+                with open(join('.', self.project_name, catname + '.txt'), 'w') as file:
                     for word in no_duplicates:
                         file.write(word + '\n')
 
@@ -322,15 +304,13 @@ class DocumentClassifier(tk.Tk):
     def sync_filehistory(self):
         '''Adds the filenames present in self.files_done, and not already 
         present in filehistory.txt, to filehistory.txt.
-
-        Only called by sync_project().
         '''
         try:
-            with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'r') as file:
+            with open(join('.', self.project_name, 'filehistory.txt'), 'r') as file:
                 filehistory = file.read().splitlines()
                 new_filehistory = filehistory + [file for file in self.files_done if file not in filehistory]
 
-            with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'w') as file:
+            with open(join('.', self.project_name, 'filehistory.txt'), 'w') as file:
                 for filename in new_filehistory:
                     file.write(filename + '\n')
 
@@ -350,14 +330,12 @@ class DocumentClassifier(tk.Tk):
         Any entries in filehistory.txt that are not present in the file
         folder will be shown to the user. Any files in the file folder
         with an invalid extension will be shown to the user.
-
-        Only called by sync_project().
         '''
         try:
             valid_extension = ('.pdf', '.txt', '.doc')
-            files_directory = os.path.join('.', self.project_name, file_folder)
+            files_directory = join('.', self.project_name, file_folder)
 
-            files = [file for file in os.listdir(files_directory) if os.path.isfile(os.path.join(files_directory, file))]
+            files = [file for file in listdir(files_directory) if isfile(join(files_directory, file))]
             valid_files = list()
             invalid_files = list()
             for file in files:
@@ -366,7 +344,7 @@ class DocumentClassifier(tk.Tk):
                 else:
                     invalid_files.append(file)
 
-            with open(os.path.join('.', self.project_name, 'filehistory.txt'), 'r') as file:
+            with open(join('.', self.project_name, 'filehistory.txt'), 'r') as file:
                 filehistory = file.read().splitlines()
 
             self.files_done = [file for file in valid_files if file in filehistory]
@@ -385,8 +363,6 @@ class DocumentClassifier(tk.Tk):
 
     def project_currently_open(self):
         '''Checks if a project is currently open.
-
-        Called by update_menu() and by sync_project().
 
         **Returns**:
         True if there is a project open.
