@@ -1,11 +1,16 @@
 # TODO:
 
 # Pop up messages to warn for unsaved progress on close and more
-# Minimize tk and ttk imports
-# Class docstrings
 # Support for .doc files
+# Maybe only show one context OR fix the refresh bug in classify
 
-# Undo for spell corrections and for word classifications
-# Spellchecker: Create more dictionaries (Check out compound_lookup?)
 # Make a manual
 # Make an .exe file with PyInstaller
+
+
+# MAYBE:
+
+# Make an icon
+# Undo for spell corrections and for word classifications
+# Class docstrings
+# Minimize tk and ttk imports

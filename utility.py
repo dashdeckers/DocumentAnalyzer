@@ -9,16 +9,12 @@ file_folder = 'PDF_Files'
 text_folder = 'Text_Files'
 
 language_dict = {
-    'english'   : 'en',
-    'german'    : 'de',
-    'spanish'   : 'es',
-    'portuguese': 'pt',
-    'french'    : 'fr',
+    'english' : 'en',
+    'german'  : 'de',
+    'dutch'   : 'nl',
     'en' : 'english',
     'de' : 'german',
-    'es' : 'spanish',
-    'pt' : 'portuguese',
-    'fr' : 'french',
+    'nl' : 'dutch',
 }
 
 strings = {
@@ -92,7 +88,10 @@ strings = {
         '''or hyphens'''
     ),
 
-    'invalid_language' : 'Invalid language',
+    'invalid_language' : (
+         '''Invalid language. Must be one of '''
+        f'''{[l for l in list(language_dict.keys())]}'''
+    ),
 
     'invalid_n_cats' : 'Number of categories must be an integer',
 }
@@ -149,17 +148,23 @@ def create_spellchecker(language='en'):
     A SpellChecker object, and
     None if something went wrong.
     '''
-    if language.lower() in ['en', 'english']:
-        spell = SymSpell()
-        path_to_dict = join('.',
-                            'Resources',
-                            'frequency_dictionary_en.txt')
-        if not spell.load_dictionary(path_to_dict, 0, 1):
-            print('Did not find the dictionary')
-            return
-        else:
-            return spell
-    return
+    if language.lower() in language_dict:
+        language = language.lower()
+        if len(language) > 2:
+            language = language_dict[language]
+    else:
+        return
+
+    spell = SymSpell()
+    path_to_dict = join('.',
+                        'Resources',
+                        f'frequency_dictionary_{language}.txt')
+
+    if spell.load_dictionary(path_to_dict, 0, 1):
+        return spell
+    else:
+        print('Could not find the dictionary.')
+        return
 
 def clean_text(text=None, extra_punctuation=""):
     '''Removes punctuation from the text and lowercases

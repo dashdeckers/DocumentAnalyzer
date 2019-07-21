@@ -34,7 +34,7 @@ class DocumentClassifier(tk.Tk):
                         foreground='red')
 
         # Project data
-        self.spell = create_spellchecker()
+        self.spell = None
         self.files_todo = list()
         self.files_done = list()
         self.categories = dict()

@@ -43,6 +43,7 @@ class ExtractTab(tk.Frame):
                                         foreground="red",
                                         underline=True)
         self.extract_text.insert('1.0', self.default_text)
+        self.extract_text.configure(state='disabled')
         self.extract_text.focus_force()
 
         # Packing
@@ -62,6 +63,7 @@ class ExtractTab(tk.Frame):
         self.hide_corrections()
 
         if self.master.project_currently_open() and self.master.files_todo:
+            self.extract_text.configure(state='normal')
             # Don't do anything if we have already extracted the correct text.
             # We don't want to replace current spell-correction progress.
             if not self.filename_var.get() == self.master.files_todo[0]:
@@ -80,6 +82,7 @@ class ExtractTab(tk.Frame):
         else:
             self.extract_text.delete('1.0', 'end')
             self.extract_text.insert('1.0', self.default_text)
+            self.extract_text.configure(state='disabled')
 
         self.update_fileprogress()
 
@@ -136,19 +139,20 @@ class ExtractTab(tk.Frame):
 
         **Args**:
 
-        * word (str): The mispelled word to get corrections for.
+        * word (str): The misspelled word to get corrections for.
 
         **Returns**:
         A list of possible corrections, sorted by edit distance and
         term frequency.
         '''
-        candidates = self.master.spell.lookup(word, Verbosity.CLOSEST)
-        candidates = [c.term for c in candidates]
+        single_corrections = self.master.spell.lookup(word, Verbosity.ALL)
+        single_corrections = [c.term for c in single_corrections]
 
-        if len(candidates) > 5:
-            return candidates[:5]
-        else:
-            return candidates
+        compound_corrections = self.master.spell.lookup_compound(word, 2)
+        compound_corrections = [c.term for c in compound_corrections]
+
+        candidates = single_corrections[:5] + compound_corrections[:5]
+        return candidates
 
     def show_corrections(self, event=None):
         '''Show the list of corrections as a menu at the mouse position.
@@ -212,10 +216,13 @@ class ExtractTab(tk.Frame):
         self.extract_text.insert('insert', word)
 
     def spellcheck(self, event=None):
-        '''Highlight each word in the text field that is mispelled.
+        '''Highlight each word in the text field that is misspelled.
         '''
-        if not self.master.files_todo:
+        if not self.master.files_todo or not self.master.spell:
             return
+
+        self.extract_text.tag_remove('misspelled', '1.0', 'end')
+
         # Loop through each word in text
         index = '1.0'
         while index:

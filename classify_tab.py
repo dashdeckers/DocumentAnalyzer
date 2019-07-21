@@ -149,7 +149,6 @@ class ClassifyTab(tk.Frame):
 
             if self.words_togo:
                 context = get_context(self.text_tokens, self.words_togo[0])
-                print(self.words_togo[0], context)
                 self.insert_next_context(self.words_togo[0], context)
 
     def get_next_text(self):
@@ -234,7 +233,7 @@ class ClassifyTab(tk.Frame):
 
             for i in range(self.master.n_cats):
                 catname = self.cat_names[i]
-                func = lambda _, c=catname: self.add_word(_, c)
+                func = lambda c=catname: self.add_word(None, c)
                 self.cat_buttons.append(ttk.Button(self.buttons_frame,
                                                    text=f'{catname} ({i+1})',
                                                    command=func))
