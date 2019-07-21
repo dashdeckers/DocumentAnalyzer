@@ -6,6 +6,6 @@
 # Support for .doc files
 
 # Undo for spell corrections and for word classifications
-# Better spellchecker
+# Spellchecker: Create more dictionaries (Check out compound_lookup?)
 # Make a manual
 # Make an .exe file with PyInstaller

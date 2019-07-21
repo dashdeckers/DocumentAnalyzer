@@ -3,6 +3,7 @@ import tkinter.ttk as ttk
 
 from os.path import join, splitext
 from functools import partial
+from symspellpy.symspellpy import Verbosity
 
 from utility import (
     text_extracter, 
@@ -130,30 +131,28 @@ class ExtractTab(tk.Frame):
         self.filename_var.set('')
         self.refresh_extract()
 
-
-
-
-
-
-
-    # Methods related to spell checking.
-    # TODO: Replace this with a better spell checker
-
     def get_corrections(self, word):
-        from time import time
-        t0 = time()
-        # TODO: This needs to be filtered to show suggestions ranked based on distance
-        candidates = list(self.master.spell.candidates(word))
-        print(f'Candidates after {time()-t0}')
-        best_guess = self.master.spell.correction(word)
-        candidates.remove(best_guess)
-        print(f'Best guess after {time()-t0}')
+        '''Get a list of correction suggestions for the word.
+
+        **Args**:
+
+        * word (str): The mispelled word to get corrections for.
+
+        **Returns**:
+        A list of possible corrections, sorted by edit distance and
+        term frequency.
+        '''
+        candidates = self.master.spell.lookup(word, Verbosity.CLOSEST)
+        candidates = [c.term for c in candidates]
+
         if len(candidates) > 5:
-            return [best_guess] + candidates[:5]
+            return candidates[:5]
         else:
-            return [best_guess] + candidates
+            return candidates
 
     def show_corrections(self, event=None):
+        '''Show the list of corrections as a menu at the mouse position.
+        '''
         # Make sure we don't have two menus open
         self.hide_corrections()
 
@@ -165,7 +164,7 @@ class ExtractTab(tk.Frame):
             word = ''
 
         # If the word is spelled incorrectly
-        if word and len(word) > 1 and self.master.spell.unknown([word]):
+        if word and len(word) > 1 and word not in self.master.spell._words:
 
             # Get the possible corrections and add them to the menu
             self.corrections_menu = tk.Menu(self, tearoff=0)
@@ -181,6 +180,8 @@ class ExtractTab(tk.Frame):
             self.extract_text.bind('<Down>', self.focus_corrections_menu)
 
     def hide_corrections(self, event=None):
+        '''Hide the menu showing the list of corrections.
+        '''
         try:
             self.corrections_menu.destroy()
             self.extract_text.unbind('<Down>')
@@ -189,6 +190,8 @@ class ExtractTab(tk.Frame):
             pass
 
     def focus_corrections_menu(self, event=None):
+        '''Set the GUI focus to the corrections menu.
+        '''
         try:
             self.corrections_menu.focus()
             self.corrections_menu.entryconfig(0, state='active')
@@ -196,10 +199,21 @@ class ExtractTab(tk.Frame):
             pass
 
     def replace_word(self, word, index):
+        '''Replace the word at the index with the given word.
+
+        **Args**:
+
+        * word (str): The word to replace the other word.
+
+        * index (str): The index at which the word can be found that
+        should be replaced.
+        '''
         self.extract_text.delete(index + ' wordstart', index + ' wordend')
         self.extract_text.insert('insert', word)
 
     def spellcheck(self, event=None):
+        '''Highlight each word in the text field that is mispelled.
+        '''
         if not self.master.files_todo:
             return
         # Loop through each word in text
@@ -210,6 +224,6 @@ class ExtractTab(tk.Frame):
                 word = self.extract_text.get(index, index + ' wordend')
                 word_end_index = f'{index}+{len(word)}c'
                 # If the word is a spelling error, tag it
-                if self.master.spell.unknown([word]):
+                if word not in self.master.spell._words:
                     self.extract_text.tag_add('misspelled', index, word_end_index)
                 index = word_end_index

@@ -2,8 +2,8 @@ from PyPDF2 import PdfFileReader
 from json import dumps
 from string import punctuation as string_punctuation
 from os.path import join
-from spellchecker import SpellChecker
 from tkinter.ttk import Label
+from symspellpy.symspellpy import SymSpell
 
 file_folder = 'PDF_Files'
 text_folder = 'Text_Files'
@@ -137,49 +137,6 @@ def text_extracter(path_to_file=None):
     except FileNotFoundError as e:
         print(f'File does not exists: {e}')
 
-def create_dictionary(path_to_file=None):
-    '''Create a frequency dictionary from a text file
-    from the GitHub link below. This will create a
-    .dict file which can be loaded by the spellchecker.
-
-    hermitdave/FrequencyWords/tree/master/content/2016
-
-    **Args**:
-
-    * path_to_file (str): The path to a .txt file containing
-    the columns (words, frequencies).
-
-    **Returns**:
-    A string containing the path to the .dict file.
-    '''
-    try:
-        if not path_to_file:
-            return
-
-        assert path_to_file.endswith('.txt'), 'Must be a text file'
-
-        # Create the dictionary from the file
-        freq_d = dict()
-        full_path = join('.', path_to_file)
-        with open(full_path, 'r') as file:
-            for line in file:
-                tokens = line.split()
-                freq_d[tokens[0]] = int(tokens[1])
-
-        # Write the dictionary to a new file
-        new_path_to_file = path_to_file[:-4] + '.dict'
-        full_path = join('.', new_path_to_file)
-        with open(full_path, 'w') as file:
-            file.write(dumps(freq_d))
-
-        return full_path
-
-    except FileNotFoundError as e:
-        print(f'File does not exist: {e}')
-
-    except AssertionError as e:
-        print(e)
-
 def create_spellchecker(language='en'):
     '''Creates a SpellChecker object.
 
@@ -189,24 +146,20 @@ def create_spellchecker(language='en'):
     should be able to make corrections for.
 
     **Returns** 
-    A SpellChecker object.
+    A SpellChecker object, and
+    None if something went wrong.
     '''
-    language = language.lower()
-    if language in language_dict and len(language) != 2:
-        language = language_dict[language]
-    
-    if language in ['en', 'de', 'es', 'pt', 'fr']:
-        return SpellChecker(language=language)
-
-    else:
-        path_to_dict_text = join(".", f"{language}_full.txt")
-        path_to_dict = create_dictionary(path_to_dict_text)
-
-        if not path_to_dict:
-            print(f'Did not find local dictionary for {language}')
+    if language.lower() in ['en', 'english']:
+        spell = SymSpell()
+        path_to_dict = join('.',
+                            'Resources',
+                            'frequency_dictionary_en.txt')
+        if not spell.load_dictionary(path_to_dict, 0, 1):
+            print('Did not find the dictionary')
             return
-
-        return SpellChecker(local_dictionary=path_to_dict)
+        else:
+            return spell
+    return
 
 def clean_text(text=None, extra_punctuation=""):
     '''Removes punctuation from the text and lowercases
