@@ -19,8 +19,7 @@ language_dict = {
 
 strings = {
     'default_text' : (
-        '''Open or create a project and then import files via the menu to '''
-        '''get started '''
+        '''Open or create a project via the menu to get started '''
     ),
 
     'cat_infotext' : (

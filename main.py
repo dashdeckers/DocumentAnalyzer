@@ -172,7 +172,7 @@ class DocumentClassifier(tk.Tk):
                 '\n'
             )
             for catnum, catname in enumerate(list(self.categories.keys())):
-                file.write(f'Category_{catnum}_name: {catname}\n')
+                file.write(f'Category_{catnum+1}_name: {catname}\n')
 
                 # Create the category / wordlist files
                 catfile_path = join('.', self.project_name, f'{catname}.txt')
