@@ -8,7 +8,7 @@ Simply download the .exe file and open it to get started.
 Select the 'Create new project' option the 'Project' menu and specify the project name, language and number of categories (=wordlists). Then, specify the names of each of the categories.
 
 ### Open an existing project
-Select the 'Open existing project' option in the 'Project' menu, then select a valid project folder.
+Select the 'Open existing project' option in the 'Project' menu, then select a valid project folder. Note that project folders must be in the same directory as the program.
 
 ### Saving the project
 To save the project, select 'Synchronize current project' from the 'Project' menu. Synchronizing the project is a two way street, it combines what is contained in the files of the project folder and what is in the memory of the program. So synchronizing acts as both updating the program's knowledge from the contents of the files AND saving the program's knowledge to the files.
