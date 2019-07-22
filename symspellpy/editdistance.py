@@ -4,7 +4,7 @@
 """
 from enum import Enum
 
-import numpy as np
+from numpy import asarray, zeros, int32
 
 import symspellpy.helpers as helpers
 
@@ -87,8 +87,8 @@ class DamerauOsa(AbstractDistanceComparer):
     def __init__(self):
         """Create a new instance of DamerauOsa"""
         self._base_char = 0
-        self._base_char_1_costs = np.zeros(0, dtype=np.int32)
-        self._base_prev_char_1_costs = np.zeros(0, dtype=np.int32)
+        self._base_char_1_costs = zeros(0, dtype=int32)
+        self._base_prev_char_1_costs = zeros(0, dtype=int32)
 
     def distance(self, string_1, string_2, max_distance):
         """Compute and return the Damerau-Levenshtein optimal string
@@ -126,8 +126,8 @@ class DamerauOsa(AbstractDistanceComparer):
             return len_2 if len_2 <= max_distance else -1
 
         if len_2 > len(self._base_char_1_costs):
-            self._base_char_1_costs = np.zeros(len_2, dtype=np.int32)
-            self._base_prev_char_1_costs = np.zeros(len_2, dtype=np.int32)
+            self._base_char_1_costs = zeros(len_2, dtype=int32)
+            self._base_prev_char_1_costs = zeros(len_2, dtype=int32)
         if max_distance < len_2:
             return self._distance_max(string_1, string_2, len_1, len_2,
                                       start, max_distance,
@@ -144,7 +144,7 @@ class DamerauOsa(AbstractDistanceComparer):
 
         **From**: https://github.com/softwx/SoftWx.Match
         """
-        char_1_costs = np.asarray([j + 1 for j in range(len_2)])
+        char_1_costs = asarray([j + 1 for j in range(len_2)])
         char_1 = " "
         current_cost = 0
         for i in range(len_1):
@@ -186,7 +186,7 @@ class DamerauOsa(AbstractDistanceComparer):
 
         **From**: https://github.com/softwx/SoftWx.Match
         """
-        char_1_costs = np.asarray([j + 1 if j < max_distance
+        char_1_costs = asarray([j + 1 if j < max_distance
                                    else max_distance + 1
                                    for j in range(len_2)])
         len_diff = len_2 - len_1

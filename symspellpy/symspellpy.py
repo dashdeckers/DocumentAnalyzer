@@ -4,13 +4,12 @@
 """
 from collections import defaultdict, namedtuple
 from enum import Enum
-import gzip
 from itertools import cycle
-import math
-import os.path
-import pickle
+from math import log10 as math_log10
+from math import pow as math_pow
+from os.path import exists as os_exists
 import re
-import sys
+from sys import maxsize as sys_maxsize
 
 from symspellpy.editdistance import DistanceAlgorithm, EditDistance
 import symspellpy.helpers as helpers
@@ -136,8 +135,8 @@ class SymSpell(object):
             count_previous = self._below_threshold_words[key]
             # calculate new count for below threshold word
             count = (count_previous + count
-                     if sys.maxsize - count_previous > count
-                     else sys.maxsize)
+                     if sys_maxsize - count_previous > count
+                     else sys_maxsize)
             # has reached threshold - remove from below threshold
             # collection (it will be added to correct words below)
             if count >= self._count_threshold:
@@ -150,8 +149,8 @@ class SymSpell(object):
             # just update count if it's an already added above
             # threshold word
             count = (count_previous + count
-                     if sys.maxsize - count_previous > count
-                     else sys.maxsize)
+                     if sys_maxsize - count_previous > count
+                     else sys_maxsize)
             self._words[key] = count
             return False
         elif count < self._count_threshold:
@@ -219,7 +218,7 @@ class SymSpell(object):
         **Returns**:
         True if file loaded, or False if file not found.
         """
-        if not os.path.exists(corpus):
+        if not os_exists(corpus):
             return False
         with open(corpus, "r", encoding=encoding) as infile:
             for line in infile:
@@ -243,54 +242,12 @@ class SymSpell(object):
         **Returns**:
         True if file loaded, or False if file not found.
         """
-        if not os.path.exists(corpus):
+        if not os_exists(corpus):
             return False
         with open(corpus, "r", encoding=encoding) as infile:
             for line in infile:
                 for key in self._parse_words(line):
                     self.create_dictionary_entry(key, 1)
-        return True
-
-    def save_pickle(self, filename, compressed=True):
-        """Pickle _deletes, _words, and _max_length for quicker loading
-        later.
-
-        **Args**:
-
-        * filename (str): The path+filename of the pickle file
-        * compressed (bool): A flag to determine whether to compress\
-            the pickled data
-        """
-        pickle_data = {
-            "deletes": self._deletes,
-            "words": self._words,
-            "max_length": self._max_length,
-            "data_version": self.data_version
-        }
-        with (gzip.open if compressed else open)(filename, "wb") as f:
-            pickle.dump(pickle_data, f)
-
-    def load_pickle(self, filename, compressed=True):
-        """Load delete combination as pickle. This will reduce the
-        loading time compared to running :meth:`load_dictionary` again.
-
-        **Args**:
-
-        * filename (str): The path+filename of the pickle file
-        * compressed (bool): A flag to determine whether to read the\
-            pickled data as compressed data
-
-        **Returns**:
-        True if delete combinations are successfully loaded.
-        """
-        with (gzip.open if compressed else open)(filename, "rb") as f:
-            pickle_data = pickle.load(f)
-        if ("data_version" not in pickle_data
-                or pickle_data["data_version"] != self.data_version):
-            return False
-        self._deletes = pickle_data["deletes"]
-        self._words = pickle_data["words"]
-        self._max_length = pickle_data["max_length"]
         return True
 
     def lookup(self, phrase, verbosity, max_edit_distance=None,
@@ -695,7 +652,7 @@ class SymSpell(object):
                     suggestion_parts.append(si)
                     self._replaced_words[term_list_1[i]] = si
         joined_term = ""
-        joined_count = sys.maxsize
+        joined_count = sys_maxsize
         for si in suggestion_parts:
             joined_term += si.term + " "
             joined_count = min(joined_count, si.count)
@@ -810,7 +767,7 @@ class SymSpell(object):
                     # product of many such small numbers could exceed
                     # (underflow) the floating number range and become
                     # zero. log(ab)=log(a)+log(b)
-                    top_log_prob = math.log10(float(results[0].count) /
+                    top_log_prob = math_log10(float(results[0].count) /
                                               float(N))
                 else:
                     top_result = part
@@ -819,8 +776,8 @@ class SymSpell(object):
                     # ed=edmax+1), although there there should many
                     # spaces inserted
                     top_ed += len(part)
-                    top_log_prob = math.log10(10.0 / N /
-                                              math.pow(10.0, len(part)))
+                    top_log_prob = math_log10(10.0 / N /
+                                              math_pow(10.0, len(part)))
 
                 dest = (i + idx) % array_size
                 # set values in first loop
