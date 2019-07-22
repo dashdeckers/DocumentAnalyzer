@@ -3,15 +3,25 @@ import tkinter.ttk as ttk
 
 from os.path import join, splitext
 from functools import partial
-from DocumentAnalyzer.symspellpy.symspellpy import Verbosity
 
-from DocumentAnalyzer.utility import (
-    text_extracter, 
-    clean_text,
-    file_folder,
-    text_folder,
-    strings,
-)
+try:
+    from DocumentAnalyzer.symspellpy.symspellpy import Verbosity
+    from DocumentAnalyzer.utility import (
+        text_extracter, 
+        clean_text,
+        file_folder,
+        text_folder,
+        strings,
+    )
+except ImportError as e:
+    from symspellpy.symspellpy import Verbosity
+    from utility import (
+        text_extracter, 
+        clean_text,
+        file_folder,
+        text_folder,
+        strings,
+    )
 
 class ExtractTab(tk.Frame):
     '''

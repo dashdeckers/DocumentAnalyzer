@@ -3,10 +3,12 @@
    :synopsis: Module for edit distance algorithms.
 """
 from enum import Enum
-
 from numpy import asarray, zeros, int32
 
-import DocumentAnalyzer.symspellpy.helpers as helpers
+try:
+    import DocumentAnalyzer.symspellpy.helpers as helpers
+except Exception as e:
+    import symspellpy.helpers as helpers
 
 class DistanceAlgorithm(Enum):
     """Supported edit distance algorithms"""

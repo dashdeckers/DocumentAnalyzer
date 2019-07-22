@@ -1,11 +1,17 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-
 from tkinter import messagebox as msg
-from DocumentAnalyzer.utility import (
-    language_dict,
-    strings,
-)
+
+try:
+    from DocumentAnalyzer.utility import (
+        language_dict,
+        strings,
+    )
+except ImportError as e:
+    from utility import (
+        language_dict,
+        strings,
+    )
 
 class CreateProject(tk.Toplevel):
     '''

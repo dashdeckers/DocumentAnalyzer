@@ -4,10 +4,16 @@ import tkinter.ttk as ttk
 from os import listdir
 from os.path import join, isfile
 
-from DocumentAnalyzer.utility import (
-    get_context,
-    text_folder,
-)
+try:
+    from DocumentAnalyzer.utility import (
+        get_context,
+        text_folder,
+    )
+except ImportError as e:
+    from utility import (
+        get_context,
+        text_folder,
+    )
 
 class ClassifyTab(tk.Frame):
     '''

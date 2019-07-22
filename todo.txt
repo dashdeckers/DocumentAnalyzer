@@ -4,15 +4,12 @@
 # Support for .doc files
 # Maybe only show one context OR fix the refresh bug in classify
 
-# Make a manual
-# Make an .exe file with PyInstaller
 
 pyinstaller --clean --onefile --noconsole --icon=doc.ico --name DocumentAnalyzer entrypoint.py
 
 
 # MAYBE:
 
-# Make an icon
 # Undo for spell corrections and for word classifications
 # Class docstrings
 # Minimize tk and ttk imports

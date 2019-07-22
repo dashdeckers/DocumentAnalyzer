@@ -2,9 +2,14 @@ from PyPDF2 import PdfFileReader
 from json import dumps
 from string import punctuation as string_punctuation
 from tkinter.ttk import Label
-from DocumentAnalyzer.symspellpy.symspellpy import SymSpell
+from os import environ
+from os.path import abspath, join
+import sys
 
-import os, sys
+try:
+    from DocumentAnalyzer.symspellpy.symspellpy import SymSpell
+except ImportError as e:
+    from symspellpy.symspellpy import SymSpell
 
 file_folder = 'PDF_Files'
 text_folder = 'Text_Files'
@@ -109,9 +114,9 @@ def resource_path(relative_path):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception as e:
-        base_path = os.environ.get("_MEIPASS2", os.path.abspath("."))
+        base_path = environ.get("_MEIPASS2", abspath("."))
 
-    return os.path.join(base_path, relative_path)
+    return join(base_path, relative_path)
 
 def text_extracter(path_to_file=None):
     '''Extracts text from a pdf, doc or txt file.
@@ -166,12 +171,20 @@ def create_spellchecker(language='en'):
         return
 
     spell = SymSpell()
-    path_to_dict = os.path.join('Resources',
-                                f'frequency_dictionary_{language}.txt')
+    path_to_dict = join('Resources',
+                        f'frequency_dictionary_{language}.txt')
 
-    path_to_dict = resource_path(path_to_dict)
+    pyinstaller_path_to_dict = resource_path(path_to_dict)
+    module_level_path_to_dict = join('.', path_to_dict)
+    top_level_path_to_dict = join('.',
+                                  'DocumentAnalyzer',
+                                   path_to_dict)
 
-    if spell.load_dictionary(path_to_dict, 0, 1):
+    if spell.load_dictionary(pyinstaller_path_to_dict, 0, 1):
+        return spell
+    elif spell.load_dictionary(module_level_path_to_dict, 0, 1):
+        return spell
+    elif spell.load_dictionary(top_level_path_to_dict, 0, 1):
         return spell
     else:
         print(f'Could not find the dictionary.')

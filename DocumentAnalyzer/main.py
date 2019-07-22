@@ -4,19 +4,33 @@ import tkinter.ttk as ttk
 from os import listdir, mkdir
 from os.path import join, isfile, split
 from tkinter import messagebox, filedialog
+from time import time
 
-from DocumentAnalyzer.extract_tab import ExtractTab
-from DocumentAnalyzer.classify_tab import ClassifyTab
-from DocumentAnalyzer.dataview_tab import DataviewTab
-from DocumentAnalyzer.popups import CreateProject
-from DocumentAnalyzer.utility import (
-    create_spellchecker,
-    file_folder,
-    text_folder,
-    strings,
-)
+try:
+    from DocumentAnalyzer.extract_tab import ExtractTab
+    from DocumentAnalyzer.classify_tab import ClassifyTab
+    from DocumentAnalyzer.dataview_tab import DataviewTab
+    from DocumentAnalyzer.popups import CreateProject
+    from DocumentAnalyzer.utility import (
+        create_spellchecker,
+        file_folder,
+        text_folder,
+        strings,
+    )
+except ImportError as e:
+    from extract_tab import ExtractTab
+    from classify_tab import ClassifyTab
+    from dataview_tab import DataviewTab
+    from popups import CreateProject
+    from utility import (
+        create_spellchecker,
+        file_folder,
+        text_folder,
+        strings,
+    )
 
-class DocumentClassifier(tk.Tk):
+
+class DocumentAnalyzer(tk.Tk):
     '''
     TODO: Fill this in.
     '''
@@ -183,7 +197,9 @@ class DocumentClassifier(tk.Tk):
             pass
 
         self.refresh_settings()
+        t0 = time()
         self.spell = create_spellchecker(self.language)
+        print(f'Loaded the spellchecker in {time()-t0}')
         self.title(self.project_name)
         self.classify.refresh_classify()
         self.dataview.refresh_dataview()
@@ -281,7 +297,9 @@ class DocumentClassifier(tk.Tk):
         self.clear_current_project()
 
         if self.parse_project_info_file(folder):
+            t0 = time()
             self.spell = create_spellchecker(self.language)
+            print(f'Loaded the spellchecker in {time()-t0}')
             self.sync_project()
             self.title(self.project_name)
             self.classify.refresh_classify()
@@ -408,7 +426,7 @@ class DocumentClassifier(tk.Tk):
         return self.project_name and self.n_cats and self.language
 
 def main():
-    App = DocumentClassifier()
+    App = DocumentAnalyzer()
     App.mainloop()
 
 if __name__ == '__main__':

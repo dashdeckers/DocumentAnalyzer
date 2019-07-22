@@ -1,10 +1,16 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from DocumentAnalyzer.utility import (
-    strings,
-    WrappingLabel,
-)
+try:
+    from DocumentAnalyzer.utility import (
+        strings,
+        WrappingLabel,
+    )
+except ImportError as e:
+    from utility import (
+        strings,
+        WrappingLabel,
+    )
 
 class DataviewTab(tk.Frame):
     '''

@@ -11,8 +11,18 @@ from os.path import exists as os_exists
 import re
 from sys import maxsize as sys_maxsize
 
-from DocumentAnalyzer.symspellpy.editdistance import DistanceAlgorithm, EditDistance
-import DocumentAnalyzer.symspellpy.helpers as helpers
+try:
+    from DocumentAnalyzer.symspellpy.editdistance import (
+        DistanceAlgorithm,
+        EditDistance,
+    )
+    import DocumentAnalyzer.symspellpy.helpers as helpers
+except ImportError as e:
+    from symspellpy.editdistance import (
+        DistanceAlgorithm,
+        EditDistance,
+    )
+    import symspellpy.helpers as helpers
 
 class Verbosity(Enum):
     """Controls the closeness/quantity of returned spelling
