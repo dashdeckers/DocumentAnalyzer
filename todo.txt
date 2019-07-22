@@ -7,7 +7,7 @@
 # Make a manual
 # Make an .exe file with PyInstaller
 
-pyinstaller --clean --onefile --noconsole --icon=doc.ico --name DocumentClassifier entrypoint.py
+pyinstaller --clean --onefile --noconsole --icon=doc.ico --name DocumentAnalyzer entrypoint.py
 
 
 # MAYBE:

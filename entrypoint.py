@@ -1,5 +1,4 @@
-from main import DocumentClassifier
+from DocumentAnalyzer.main import main
 
 if __name__ == '__main__':
-    App = DocumentClassifier()
-    App.mainloop()
+	main()
