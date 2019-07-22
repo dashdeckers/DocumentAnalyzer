@@ -7,6 +7,8 @@
 # Make a manual
 # Make an .exe file with PyInstaller
 
+pyinstaller --onefile --noconsole --icon=doc.ico --name DocumentClassifier
+
 
 # MAYBE:
 
