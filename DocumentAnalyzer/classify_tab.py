@@ -222,7 +222,7 @@ class ClassifyTab(tk.Frame):
         if self.master.project_currently_open():
             self.cat_buttons = list()
 
-            for i, catname in enumerate(list(self.master.categories.keys())):
+            for i, catname in enumerate(self.master.categories):
                 func = lambda c=catname: self.add_word(None, c)
                 self.cat_buttons.append(ttk.Button(self.buttons_frame,
                                                    text=f'{catname} ({i+1})',

@@ -45,8 +45,7 @@ class DocumentAnalyzer(tk.Tk):
         self.font_size = 12
 
         style = ttk.Style()
-        style.configure('WORD.TLabel',
-                        foreground='red')
+        style.configure('WORD.TLabel', foreground='red')
 
         # Project data
         self.spell = None
