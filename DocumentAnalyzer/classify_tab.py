@@ -8,11 +8,13 @@ try:
     from DocumentAnalyzer.utility import (
         get_context,
         text_folder,
+        max_button_cols,
     )
 except ImportError as e:
     from utility import (
         get_context,
         text_folder,
+        max_button_cols,
     )
 
 class ClassifyTab(tk.Frame):
@@ -22,46 +24,28 @@ class ClassifyTab(tk.Frame):
     def __init__(self, master):
         super().__init__()
         self.master = master
-        self.max_button_cols = 4
 
         # Project data
-        self.cat_names = None
         self.cat_buttons = None
         self.words_togo = list()
         self.text_tokens = list()
         self.text_files_done = list()
 
         # GUI stuff
-        self.pc_frame = ttk.Frame(self)
-        self.cc_frame = ttk.Frame(self)
-
-        self.pc_words = list()
-        self.pc_labels = list()
-        self.cc_words = list()
-        self.cc_labels = list()
+        self.c_frame = ttk.Frame(self)
+        self.c_words = list()
+        self.c_labels = list()
         for i in range(5):
-            self.pc_words.append(tk.StringVar(self.pc_frame, value=''))
-            self.cc_words.append(tk.StringVar(self.cc_frame, value=''))
-        for i in range(5):
-            self.pc_labels.append(ttk.Label(self.pc_frame,
-                                            textvar=self.pc_words[i]))
-            self.cc_labels.append(ttk.Label(self.cc_frame,
-                                            textvar=self.cc_words[i]))
-
-        self.pc_labels[2].configure(style='WORD.TLabel')
-        self.cc_labels[2].configure(style='WORD.TLabel')
-
+            self.c_words.append(tk.StringVar(self.c_frame, value=''))
+            self.c_labels.append(ttk.Label(self.c_frame,
+                                            textvar=self.c_words[-1]))
+        self.c_labels[2].configure(style='WORD.TLabel')
         self.buttons_frame = ttk.Frame(self)
 
         # Packing
         for i in range(5):
-            self.pc_labels[i].pack(side='left', expand=1)
-        self.pc_frame.pack(side='top', fill='x', expand=1)
-
-        for i in range(5):
-            self.cc_labels[i].pack(side='left', expand=1)
-        self.cc_frame.pack(side='top', fill='x', expand=1)
-
+            self.c_labels[i].pack(side='left', expand=1)
+        self.c_frame.pack(side='top', fill='x', expand=1)
         self.buttons_frame.pack(side='bottom', fill='both', expand=1)
 
     def refresh_classify(self):
@@ -84,7 +68,7 @@ class ClassifyTab(tk.Frame):
         '''Add the current word to the corresponding category,
         depending on which button was pressed, and get the next word.
         '''
-        word = self.cc_words[2].get()
+        word = self.c_words[2].get()
         if not word == 'Finished!':
             self.master.categories[catname].append(word)
         self.next_word()
@@ -104,39 +88,37 @@ class ClassifyTab(tk.Frame):
         '''
         if word == 'Finished!' and not context:
             for i in range(5):
-                self.pc_words[i].set('')
-                self.cc_words[i].set('')
-            self.cc_words[2].set(word)
+                self.c_words[i].set('')
+            self.c_words[2].set(word)
             return
 
         if not context and not word:
             for i in range(5):
-                self.pc_words[i].set('')
-                self.cc_words[i].set('')
+                self.c_words[i].set('')
 
         else:
-            for i in range(5):
-                self.pc_words[i].set(self.cc_words[i].get())
-
+            # Left context
             if len(context[0]) == 2:
-                self.cc_words[0].set(context[0][0])
-                self.cc_words[1].set(context[0][1])
+                self.c_words[0].set(context[0][0])
+                self.c_words[1].set(context[0][1])
 
             if len(context[0]) == 1:
-                self.cc_words[0].set('')
-                self.cc_words[1].set(context[0][0])
+                self.c_words[0].set('')
+                self.c_words[1].set(context[0][0])
 
             if len(context[0]) == 0:
-                self.cc_words[0].set('')
-                self.cc_words[1].set('')
+                self.c_words[0].set('')
+                self.c_words[1].set('')
 
-            self.cc_words[2].set(word)
+            # Word
+            self.c_words[2].set(word)
 
+            # Right context
             for i in [0,1]:
                 try:
-                    self.cc_words[3+i].set(context[1][i])
+                    self.c_words[3+i].set(context[1][i])
                 except IndexError as e:
-                    self.cc_words[3+i].set('')
+                    self.c_words[3+i].set('')
                     pass
 
 
