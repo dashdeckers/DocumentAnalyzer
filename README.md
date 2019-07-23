@@ -2,7 +2,7 @@
 
 ## Usage
 
-Simply download the .exe file and open it to get started.
+Simply download the .exe file and open it to get started. Note that loading a project in a language other than English can take up to a minute because the only suitable frequency dictionaries I could find for the spellchecker for other languages are very big.
 
 ### Create a project
 Select the 'Create new project' option the 'Project' menu and specify the project name, language and number of categories (=wordlists). Then, specify the names of each of the categories.
@@ -31,7 +31,7 @@ In this tab, words can be classified into one of the available categories either
 Each word is classified only once, if the word should be in two or more categories then that must be done by adding the word to the category file manually.
 
 ### The 'Results' tab
-Under construction.
+This tab shows the results, which are computed everytime the tab is opened. It goes through each word in all of the .txt files in the 'Text_Files' folder and then for each category, if that word appears in that category it increases the count for that category.
 
 ### The 'Data View' tab
 Here, the internal data can be viewed. Select a category or the 'File History' to see the what the contents of the selection, based on the internal program data. After synchronizing the project, those contents should be identical to the file contents.
@@ -44,14 +44,12 @@ The project folder has a very specific structure:
 Project_folder
 └───PDF_Files
 │   │   document1.pdf
-│   │   document2.doc
-│   │   document3.txt
+│   │   document2.txt
 │   │   ...
 │
 └───Text_Files
 │   │   document1.txt
 │   │   document2.txt
-│   │   document3.txt
 │   │   ...
 │
 │   project_info.txt
@@ -61,7 +59,7 @@ Project_folder
 │   category3.txt
 │   ...
 ```
-The folder named 'PDF_Files' contains all the documents that you wish to analyze. The program currently supports .pdf, .doc and .txt file types.\
+The folder named 'PDF_Files' contains all the documents that you wish to analyze. The program currently supports .pdf and .txt file types.\
 \
 The folder named 'Text_files' will contain the text extracted from these documents in plain text (.txt) files, with the same file names as the original documents.\
 \
@@ -84,5 +82,5 @@ Category_2_name: name
 ```
 The fields 'name', 'language' and 'X' can be changed. X must be an integer, and there must be just as many lines specifying category names as the value of X. Language can be either the two-letter shortcut (such as 'nl') or the full language name ('dutch'). Currently only Dutch, English and German are supported, but more can be added on request.\
 \
-The name of the project folder must be the same as the name of the project. The files in the 'PDF_Files' folder can be either .pdf, .doc or .txt files. The 'filehistory.txt' and the category files must contain only one word per line. There must be as many category files as the number of categories specified.
+The name of the project folder must be the same as the name of the project. The files in the 'PDF_Files' folder can be either .pdf or .txt files. The 'filehistory.txt' and the category files must contain only one word per line. There must be as many category files as the number of categories specified.
 
