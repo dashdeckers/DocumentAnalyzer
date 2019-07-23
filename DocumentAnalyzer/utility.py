@@ -1,9 +1,9 @@
 from PyPDF2 import PdfFileReader
 from json import dumps
-from string import punctuation as string_punctuation
 from tkinter.ttk import Label
 from os import environ
 from os.path import abspath, join
+import re
 import sys
 
 try:
@@ -13,6 +13,8 @@ except ImportError as e:
 
 file_folder = 'PDF_Files'
 text_folder = 'Text_Files'
+
+max_button_cols = 4
 
 language_dict = {
     'english' : 'en',
@@ -190,18 +192,13 @@ def create_spellchecker(language='en'):
         print(f'Could not find the dictionary.')
         return
 
-def clean_text(text=None, extra_punctuation=""):
-    '''Removes punctuation from the text and lowercases
-    it. Currently removes:
-    !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘
+def clean_text(text=None):
+    '''Removes all non-alphabetical characters except spaces
+    from the text and lowercases it.
 
     **Args**:
 
     * text (str): The text to be cleaned.
-
-    * extra_punctuation (str): A string of punctuation marks
-    to be removed that are not already included in 
-    string.punctuation.
 
     **Returns**:
     The cleaned text.
@@ -209,9 +206,8 @@ def clean_text(text=None, extra_punctuation=""):
     if not text:
         return
 
-    punctuation = string_punctuation + extra_punctuation + "Œ—•’‚˙˜˚ˆˇ˜Ł™˛˝˘"
-    table = str.maketrans(dict.fromkeys(punctuation))
-    text = text.translate(table)
+    regex = re.compile('[^a-zA-Z \n]')
+    text = regex.sub('', text)
 
     return text.lower()
 

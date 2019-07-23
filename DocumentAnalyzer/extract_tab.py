@@ -134,6 +134,8 @@ class ExtractTab(tk.Frame):
             self.master.files_done.append(self.master.files_todo[0])
             del self.master.files_todo[0]
 
+            self.master.sync_filehistory()
+
         self.refresh_extract()
 
     def reparse(self):
