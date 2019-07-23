@@ -246,6 +246,7 @@ class DocumentAnalyzer(tk.Tk):
 
         self.results.res_labels = None
         self.results.res_values = dict()
+        self.results.destroy_labels()
 
         self.dataview.selected_data_view.set('File History')
         self.dataview.data_view_selector['values'] = ['File History']

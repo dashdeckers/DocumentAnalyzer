@@ -2,7 +2,7 @@
 
 ## Usage
 
-Simply download the .exe file and open it to get started. Note that loading a project in a language other than English can take up to a minute because the only suitable frequency dictionaries I could find for the spellchecker for other languages are very big.
+Simply download the .exe file and open it to get started.
 
 ### Create a project
 Select the 'Create new project' option the 'Project' menu and specify the project name, language and number of categories (=wordlists). Then, specify the names of each of the categories.
