@@ -9,6 +9,7 @@ from time import time
 try:
     from DocumentAnalyzer.extract_tab import ExtractTab
     from DocumentAnalyzer.classify_tab import ClassifyTab
+    from DocumentAnalyzer.results_tab import ResultsTab
     from DocumentAnalyzer.dataview_tab import DataviewTab
     from DocumentAnalyzer.popups import CreateProject
     from DocumentAnalyzer.utility import (
@@ -20,6 +21,7 @@ try:
 except ImportError as e:
     from extract_tab import ExtractTab
     from classify_tab import ClassifyTab
+    from results_tab import ResultsTab
     from dataview_tab import DataviewTab
     from popups import CreateProject
     from utility import (
@@ -57,6 +59,7 @@ class DocumentAnalyzer(tk.Tk):
         # Tabs
         self.extract = ExtractTab(self)
         self.classify = ClassifyTab(self)
+        self.results = ResultsTab(self)
         self.dataview = DataviewTab(self)
 
         # Menu
@@ -87,6 +90,7 @@ class DocumentAnalyzer(tk.Tk):
         # Packing
         self.notebook.add(self.extract, text='Extract Text')
         self.notebook.add(self.classify, text='Classify')
+        self.notebook.add(self.results, text='Results')
         self.notebook.add(self.dataview, text='View Data')
         self.notebook.pack(fill='both', expand=1)
         self.config(menu=self.menu)
@@ -101,10 +105,12 @@ class DocumentAnalyzer(tk.Tk):
         self.update_menu()
 
         current_tab = self.notebook.tab(self.notebook.select(), 'text')
-        if current_tab == 'Classify':
-            self.classify.refresh_classify()
         if current_tab == 'Extract Text':
             self.extract.refresh_extract()
+        if current_tab == 'Classify':
+            self.classify.refresh_classify()
+        if current_tab == 'Results':
+            self.results.refresh_results()
         if current_tab == 'View Data':
             self.dataview.refresh_dataview()
 
@@ -146,15 +152,13 @@ class DocumentAnalyzer(tk.Tk):
         self.extract.extract_text.bind('<FocusOut>',
                                        self.extract.hide_corrections)
 
-        if self.project_currently_open() and self.classify.cat_names:
-            if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
-                for i in range(self.n_cats):
-                    catname = self.classify.cat_names[i]
-                    func = lambda _, c=catname: self.classify.add_word(_, c)
-                    self.bind(str(i+1), func)
-            else:
-                for i in range(self.n_cats):
-                    self.unbind(str(i+1))
+        if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
+            for i, catname in enumerate(list(self.categories.keys())):
+                func = lambda _, c=catname: self.classify.add_word(_, c)
+                self.bind(str(i+1), func)
+        else:
+            for i in range(len(self.categories)):
+                self.unbind(str(i+1))
 
     def show_new_project_popup(self):
         '''Asks for user confirmation before clearing the current project
@@ -220,13 +224,15 @@ class DocumentAnalyzer(tk.Tk):
         self.extract.filename_var.set('')
         self.extract.filenumber_var.set('')
 
-        self.classify.cat_names = None
         self.classify.destroy_cat_buttons()
         self.classify.cat_buttons = None
         self.classify.text_files_done = list()
         self.classify.text_tokens = list()
         self.classify.words_togo = list()
         self.classify.insert_next_context()
+
+        self.results.res_labels = None
+        self.results.res_values = dict()
 
         self.dataview.selected_data_view.set('File History')
         self.dataview.data_view_selector['values'] = ['File History']
@@ -371,7 +377,7 @@ class DocumentAnalyzer(tk.Tk):
                 strings['filehistory_missing'](e))
 
     def sync_files(self):
-        '''Synchronises the files in the project folder (file_folder),
+        '''Synchronises the files in the project folder (file_folder)
         and filehistory.txt with the internal lists self.files_done and 
         self.files_todo. The list of files present in the folder and NOT 
         listed in filehistory.txt will replace the self.files_todo list. 
