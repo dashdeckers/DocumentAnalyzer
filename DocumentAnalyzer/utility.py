@@ -26,6 +26,11 @@ language_dict = {
 }
 
 strings = {
+    'save_reminder' : lambda e: (
+        f'''Do you want to {e.lower()}? Make sure to save the project '''
+         '''first by synchronizing it!'''
+    ),
+
     'default_text' : (
         '''Open or create a project via the menu to get started '''
     ),
@@ -121,7 +126,7 @@ def resource_path(relative_path):
     return join(base_path, relative_path)
 
 def text_extracter(path_to_file=None):
-    '''Extracts text from a pdf, doc or txt file.
+    '''Extracts text from a pdf or txt file.
 
     TODO: Add support for .doc files.
 

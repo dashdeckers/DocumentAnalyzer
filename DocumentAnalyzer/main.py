@@ -3,7 +3,8 @@ import tkinter.ttk as ttk
 
 from os import listdir, mkdir
 from os.path import join, isfile, split
-from tkinter import messagebox, filedialog
+from tkinter import messagebox as msg
+from tkinter import filedialog
 from time import time
 
 try:
@@ -136,6 +137,8 @@ class DocumentAnalyzer(tk.Tk):
         '''Set the appropriate keyboard bindings depending on which tab the
         user is currently viewing.
         '''
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
         self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
         self.notebook.bind('<Control-n>', self.show_new_project_popup)
         self.notebook.bind('<Control-o>', self.open_project)
@@ -160,13 +163,24 @@ class DocumentAnalyzer(tk.Tk):
             for i in range(len(self.categories)):
                 self.unbind(str(i+1))
 
+    def on_close(self):
+        '''Ask the user for confirmation before quitting the program,
+        if a project is open.
+        '''
+        if not self.project_currently_open():
+            self.destroy()
+        elif msg.askokcancel('Quit', strings['save_reminder']('Quit')):
+            self.destroy()
+
     def show_new_project_popup(self):
         '''Asks for user confirmation before clearing the current project
         and creating a new one via popup windows.
-
-        TODO: Ask for confirmation
         '''
-        if True:
+        if not self.project_currently_open():
+            self.clear_current_project()
+            CreateProject(self)
+        elif msg.askokcancel('New project',
+                             strings['save_reminder']('create a project')):
             self.clear_current_project()
             CreateProject(self)
 
@@ -277,25 +291,28 @@ class DocumentAnalyzer(tk.Tk):
             return True
 
         except ValueError:
-            messagebox.showerror('Project info file error',
+            msg.showerror('Project info file error',
                 strings['n_cats_value_err'])
             return False
 
         except AssertionError as e:
-            messagebox.showerror('Project info file error',
+            msg.showerror('Project info file error',
                 strings['assertion_err'](e))
             return False
 
         except FileNotFoundError as e:
-            messagebox.showerror('Project info file error',
+            msg.showerror('Project info file error',
                 strings['project_file_missing'])
             return False
 
     def open_project(self, event=None):
         '''Open a project folder selected by the user.
-
-        TODO: Test if unsaved progress exists, notify the user.
         '''
+        if self.project_currently_open() and not \
+                msg.askokcancel('Switch project',
+                                strings['save_reminder']('switch projects')):
+            return
+
         folder = filedialog.askdirectory()
         if not folder:
             return
@@ -348,11 +365,11 @@ class DocumentAnalyzer(tk.Tk):
                 self.categories[catname] = no_duplicates
 
         except FileNotFoundError as e:
-            messagebox.showerror('Category file error', 
+            msg.showerror('Category file error', 
                 strings['cat_file_missing'](e))
 
         except BrokenPipeError as e:
-            messagebox.showerror('Unknown Error',
+            msg.showerror('Unknown Error',
                 strings['broken_pipe_err'])
 
     def sync_filehistory(self):
@@ -373,7 +390,7 @@ class DocumentAnalyzer(tk.Tk):
             self.files_done = new_fh
 
         except FileNotFoundError as e:
-            messagebox.showerror('Filehistory file error',
+            msg.showerror('Filehistory file error',
                 strings['filehistory_missing'](e))
 
     def sync_files(self):
@@ -411,16 +428,16 @@ class DocumentAnalyzer(tk.Tk):
             inconsistencies = [f for f in filehistory 
                                     if f not in self.files_done]
             if inconsistencies:
-                messagebox.showerror('Filehistory error',
+                msg.showerror('Filehistory error',
                     strings['filehist_inconsistency'](inconsistencies))
             if invalid_files:
-                messagebox.showerror('Invalid extension',
+                msg.showerror('Invalid extension',
                     strings['invalid_extension'](invalid_files))
 
             self.extract.refresh_extract()
 
         except FileNotFoundError as e:
-            messagebox.showerror('Filehistory file error',
+            msg.showerror('Filehistory file error',
                 strings['filehistory_missing'](e))
 
     def project_currently_open(self):
