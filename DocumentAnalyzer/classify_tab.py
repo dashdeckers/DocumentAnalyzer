@@ -220,16 +220,14 @@ class ClassifyTab(tk.Frame):
         many columns as specified in max_button_cols.
         '''
         if self.master.project_currently_open():
-            self.cat_names = list(self.master.categories.keys())
             self.cat_buttons = list()
 
-            for i in range(self.master.n_cats):
-                catname = self.cat_names[i]
+            for i, catname in enumerate(list(self.master.categories.keys())):
                 func = lambda c=catname: self.add_word(None, c)
                 self.cat_buttons.append(ttk.Button(self.buttons_frame,
                                                    text=f'{catname} ({i+1})',
                                                    command=func))
 
-            for i in range(self.master.n_cats):
-                self.cat_buttons[i].grid(row=int(i / self.max_button_cols),
-                                         column=i % self.max_button_cols)
+            for i, button in enumerate(self.cat_buttons):
+                button.grid(row=int(i / max_button_cols),
+                            column=i % max_button_cols)
