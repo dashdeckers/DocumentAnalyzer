@@ -158,6 +158,28 @@ def text_extracter(path_to_file=None):
     except FileNotFoundError as e:
         print(f'File does not exists: {e}')
 
+def normalize_language(language):
+    '''Converts a language input string to its two letter shortcut.
+    If the language is not recognized or supported, return False.
+
+    **Args**:
+
+    * language (str): The string representing the language. Can be,
+    for example, either 'English', 'english' or 'en'.
+
+    **Returns**:
+    The two letter shortcut, for example 'en'.
+    '''
+    if language.lower() in language_dict:
+        language = language.lower()
+
+        if len(language) > 2:
+            language = language_dict[language]
+        return language
+
+    else:
+        return False
+
 def create_spellchecker(language='en'):
     '''Creates a SpellChecker object.
 
@@ -170,11 +192,8 @@ def create_spellchecker(language='en'):
     A SpellChecker object, and
     None if something went wrong.
     '''
-    if language.lower() in language_dict:
-        language = language.lower()
-        if len(language) > 2:
-            language = language_dict[language]
-    else:
+    language = normalize_language(language)
+    if not language:
         return
 
     spell = SymSpell()
