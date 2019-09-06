@@ -277,10 +277,12 @@ class DocumentAnalyzer(tk.Tk):
             assert lines[1][0] == 'Number_of_categories:', strings['n_cat_err']
             assert lines[2][0] == 'Project_language:', strings['p_lang_err']
             assert not lines[3], strings['blank_line_err']
-            assert lines[0][1] == split(folder)[-1], strings['folder_name_err']
+
+            project_name = ' '.join(lines[0][1:])
+            assert project_name == split(folder)[-1], strings['folder_name_err']
 
             self.n_cats = int(lines[1][1])
-            self.project_name = lines[0][1]
+            self.project_name = project_name
             self.language = lines[2][1]
 
             # Make sure the category data has the valid format and parse it
