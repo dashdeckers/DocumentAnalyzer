@@ -242,7 +242,9 @@ def create_all_spellcheckers():
 def load_spellchecker(language, spellcheckers):
     '''Load a spellchecker from a pickle file and return it, unless we
     have already loaded it in which case return that one. If we created
-    a new one, add it to the dictionary of spellcheckers.
+    a new one, add it to the dictionary of spellcheckers. However, to
+    keep from using up too much memory, at most 3 spellcheckers will be
+    stored and the first added one will be removed.
 
     **Args**:
 
@@ -260,6 +262,10 @@ def load_spellchecker(language, spellcheckers):
 
     if language in spellcheckers:
         return spellcheckers[language]
+
+    if len(spellcheckers) > 2:
+        # Remove the first added spellchecker if we already have 3
+        del spellcheckers[list(spellcheckers.keys())[0]]
 
     paths = get_resource_paths(language)
     for path_to_spellchecker in paths:
