@@ -201,7 +201,6 @@ class ExtractTab(tk.Frame):
         try:
             self.corrections_menu.destroy()
             self.extract_text.unbind('<Down>')
-            self.extract_text.focus()
         except AttributeError:
             pass
 
