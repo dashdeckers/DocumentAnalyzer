@@ -133,6 +133,40 @@ class DocumentAnalyzer(tk.Tk):
                 for i in range(3):
                     self.menu_edit.entryconfig(i, state='disabled')
 
+    def clear_current_project(self):
+        '''Purges all internal project data.
+        '''
+        self.title('Document Classifier')
+        self.spell = None
+        self.files_todo = list()
+        self.files_done = list()
+        self.categories = dict()
+        self.project_name = None
+        self.language = None
+        self.n_cats = None
+
+        self.extract.filename_var.set('')
+        self.extract.filenumber_var.set('')
+
+        self.classify.destroy_cat_buttons()
+        self.classify.cat_buttons = None
+        self.classify.text_files_done = list()
+        self.classify.text_tokens = list()
+        self.classify.words_togo = list()
+        self.classify.insert_next_context()
+
+        self.results.res_labels = None
+        self.results.res_values = dict()
+        self.results.destroy_labels()
+
+        self.dataview.selected_data_view.set('File History')
+        self.dataview.data_view_selector['values'] = ['File History']
+        self.dataview.data_view_selector.current(0)
+
+        self.classify.refresh_classify()
+        self.dataview.refresh_dataview()
+        self.extract.refresh_extract()
+
     def set_bindings(self):
         '''Set the appropriate keyboard bindings depending on which tab the
         user is currently viewing.
@@ -223,40 +257,6 @@ class DocumentAnalyzer(tk.Tk):
         self.dataview.refresh_dataview()
         self.extract.refresh_extract()
 
-    def clear_current_project(self):
-        '''Purges all internal project data.
-        '''
-        self.title('Document Classifier')
-        self.spell = None
-        self.files_todo = list()
-        self.files_done = list()
-        self.categories = dict()
-        self.project_name = None
-        self.language = None
-        self.n_cats = None
-
-        self.extract.filename_var.set('')
-        self.extract.filenumber_var.set('')
-
-        self.classify.destroy_cat_buttons()
-        self.classify.cat_buttons = None
-        self.classify.text_files_done = list()
-        self.classify.text_tokens = list()
-        self.classify.words_togo = list()
-        self.classify.insert_next_context()
-
-        self.results.res_labels = None
-        self.results.res_values = dict()
-        self.results.destroy_labels()
-
-        self.dataview.selected_data_view.set('File History')
-        self.dataview.data_view_selector['values'] = ['File History']
-        self.dataview.data_view_selector.current(0)
-
-        self.classify.refresh_classify()
-        self.dataview.refresh_dataview()
-        self.extract.refresh_extract()
-
     def parse_project_info_file(self, folder):
         '''Parses a project_info.txt file and incorporates the contained
         information.
@@ -290,7 +290,8 @@ class DocumentAnalyzer(tk.Tk):
             assert len(lines) == 4 + self.n_cats, strings['n_cat_lines_err']
 
             for cat in range(4, 4 + self.n_cats):
-                self.categories[lines[cat][1]] = list()
+                cat_name = ' '.join(lines[cat][1:])
+                self.categories[cat_name] = list()
             return True
 
         except ValueError:
