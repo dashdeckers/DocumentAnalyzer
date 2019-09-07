@@ -66,15 +66,15 @@ strings = {
     ),
 
     'n_cats_value_err'  : (
-        '''Invalid "Number_of_categories" value in project info file.'''
+        '''Invalid "Number_of_categories" value in project info file. '''
         '''Must be an integer!'''
     ),
 
-    'assertion_err' : lambda e: ( '''Problem with the project info file'''
+    'assertion_err' : lambda e: ( '''Problem with the project info file '''
         f'''structure: {e}.'''),
 
     'project_file_missing': (
-        '''The project info file (project_info.txt) is missing.'''
+        '''The project info file (project_info.txt) is missing. '''
         '''Is this a valid project folder?'''
     ),
 
@@ -96,7 +96,7 @@ strings = {
     ),
 
     'invalid_name' : (
-        '''Project name must be alphabetical, or with spaces, underscores'''
+        '''Project name must be alphabetical, or with spaces, underscores '''
         '''or hyphens'''
     ),
 
