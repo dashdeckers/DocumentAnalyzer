@@ -14,7 +14,7 @@ try:
     from DocumentAnalyzer.dataview_tab import DataviewTab
     from DocumentAnalyzer.popups import CreateProject
     from DocumentAnalyzer.utility import (
-        create_spellchecker,
+        load_spellchecker,
         file_folder,
         text_folder,
         strings,
@@ -26,7 +26,7 @@ except ImportError as e:
     from dataview_tab import DataviewTab
     from popups import CreateProject
     from utility import (
-        create_spellchecker,
+        load_spellchecker,
         file_folder,
         text_folder,
         strings,
@@ -49,6 +49,7 @@ class DocumentAnalyzer(tk.Tk):
 
         # Project data
         self.spell = None
+        self.spellcheckers = dict()
         self.files_todo = list()
         self.files_done = list()
         self.categories = dict()
@@ -215,7 +216,7 @@ class DocumentAnalyzer(tk.Tk):
 
         self.refresh_settings()
         t0 = time()
-        self.spell = create_spellchecker(self.language)
+        self.spell = load_spellchecker(self.language, self.spellcheckers)
         print(f'Loaded the spellchecker in {time()-t0}')
         self.title(self.project_name)
         self.classify.refresh_classify()
@@ -323,7 +324,7 @@ class DocumentAnalyzer(tk.Tk):
 
         if self.parse_project_info_file(folder):
             t0 = time()
-            self.spell = create_spellchecker(self.language)
+            self.spell = load_spellchecker(self.language, self.spellcheckers)
             print(f'Loaded the spellchecker in {time()-t0}')
             self.sync_project()
             self.title(self.project_name)
@@ -455,4 +456,31 @@ def main():
     App.mainloop()
 
 if __name__ == '__main__':
+    #from utility import create_all_spellcheckers
+    #create_all_spellcheckers()
     main()
+
+    '''
+    # Time normal loading
+    t0 = time()
+    spell1 = load_spellchecker('Dutch', None)
+    print(f'Loaded the spellchecker normally in {time()-t0}')
+
+    # Prepare for using pickle
+    t0 = time()
+    import pickle
+    with open('datafile', 'wb') as file:
+        pickle.dump(spell1, file)
+    print(f'Wrote the spellchecker to file using pickle in {time()-t0}')
+
+    # Time pickle loading
+    t0 = time()
+    with open('datafile', 'rb') as file:
+        spell2 = pickle.load(file)
+    print(f'Loaded the spellchecker using pickle in {time()-t0}')
+
+    # Show off skills
+    from symspellpy.symspellpy import Verbosity
+    print([w.term for w in spell1.lookup('danke', Verbosity.ALL)[:10]])
+    print([w.term for w in spell2.lookup('danke', Verbosity.ALL)[:10]])
+    '''

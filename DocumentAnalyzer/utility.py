@@ -5,6 +5,7 @@ from os import environ
 from os.path import abspath, join
 import re
 import sys
+import pickle
 
 try:
     from DocumentAnalyzer.symspellpy.symspellpy import SymSpell
@@ -180,13 +181,74 @@ def normalize_language(language):
     else:
         return False
 
-def create_spellchecker(language='en'):
-    '''Creates a SpellChecker object.
+# Try different paths to resource file
+def get_resource_paths(file):
+    return [
+        # Pyinstaller path
+        resource_path(join('Resources', file)),
+        # Module level path
+        join('.', 'Resources', file),
+        # Top level path
+        join('.', 'DocumentAnalyzer', 'Resources', file)
+    ]
+
+def create_spellchecker(language):
+    '''Creates a SpellChecker object and pickles it to file.
 
     **Args**:
 
     * language (str): The language that the spellchecker
     should be able to make corrections for.
+    '''
+    language = normalize_language(language)
+    if not language:
+        return
+
+    spell = SymSpell()
+    spell.language = language
+
+    # Pickle the spellchecker to file
+    def dump_pickle(full_path, spellchecker):
+        with open(full_path, 'wb') as datafile:
+            pickle.dump(spellchecker, datafile)
+        return True
+
+    # Load the frequency dictionary into the spellchecker
+    def load_dict(full_path, spellchecker):
+        return spellchecker.load_dictionary(full_path, 0, 1)
+
+    # Try loading and pickling for each path type until success
+    paths = zip(get_resource_paths(f'frequency_dictionary_{language}.txt'), 
+                get_resource_paths(language))
+    for dict_path, pickle_path in paths:
+        if load_dict(dict_path, spell) and dump_pickle(pickle_path, spell):
+            return
+
+    print(f'Could not find the frequency dictionary file.')
+
+
+def create_all_spellcheckers():
+    '''Iterates over all available languages in the language dictionary
+    and creates a pickle file for each of them.
+    '''
+    count = 0
+    total = int(len(language_dict) / 2)
+    for index, language in enumerate(language_dict):
+        if len(language) == 2:
+            create_spellchecker(language)
+            count += 1
+            print(f'Created the "{language}" file: {count}/{total}')
+
+def load_spellchecker(language, spellcheckers):
+    '''Load a spellchecker from a pickle file and return it, unless we
+    have already loaded it in which case return that one. If we created
+    a new one, add it to the dictionary of spellcheckers.
+
+    **Args**:
+
+    * language (str): The language to load.
+
+    * spellcheckers: A dictionary of already loaded spellcheckers.
 
     **Returns** 
     A SpellChecker object, and
@@ -196,25 +258,21 @@ def create_spellchecker(language='en'):
     if not language:
         return
 
-    spell = SymSpell()
-    path_to_dict = join('Resources',
-                        f'frequency_dictionary_{language}.txt')
+    if language in spellcheckers:
+        return spellcheckers[language]
 
-    pyinstaller_path_to_dict = resource_path(path_to_dict)
-    module_level_path_to_dict = join('.', path_to_dict)
-    top_level_path_to_dict = join('.',
-                                  'DocumentAnalyzer',
-                                   path_to_dict)
+    paths = get_resource_paths(language)
+    for path_to_spellchecker in paths:
+        try:
+            # Try loading the spellchecker and returning it
+            with open(path_to_spellchecker, 'rb') as datafile:
+                spell = pickle.load(datafile)
 
-    if spell.load_dictionary(pyinstaller_path_to_dict, 0, 1):
-        return spell
-    elif spell.load_dictionary(module_level_path_to_dict, 0, 1):
-        return spell
-    elif spell.load_dictionary(top_level_path_to_dict, 0, 1):
-        return spell
-    else:
-        print(f'Could not find the dictionary.')
-        return
+            spellcheckers[language] = spell
+            return spell
+
+        except FileNotFoundError:
+            pass
 
 def clean_text(text=None):
     '''Removes all non-alphabetical characters except spaces
