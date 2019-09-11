@@ -18,12 +18,27 @@ text_folder = 'Text_Files'
 max_button_cols = 4
 
 language_dict = {
-    'english' : 'en',
-    'german'  : 'de',
-    'dutch'   : 'nl',
+    'english'    : 'en',
+    'german'     : 'de',
+    'dutch'      : 'nl',
+    'hungarian'  : 'hu',
+    'estonian'   : 'et',
+    'lithuanian' : 'lt',
+    'danish'     : 'da',
+    'swedish'    : 'sv',
+    'norwegian'  : 'no',
+    'italian'    : 'it',
+
     'en' : 'english',
     'de' : 'german',
     'nl' : 'dutch',
+    'hu' : 'hungarian',
+    'et' : 'estonian',
+    'lt' : 'lithuanian',
+    'da' : 'danish',
+    'sv' : 'swedish',
+    'no' : 'norwegian',
+    'it' : 'italian',
 }
 
 strings = {
@@ -209,7 +224,7 @@ def create_spellchecker(language):
 
     # Pickle the spellchecker to file
     def dump_pickle(full_path, spellchecker):
-        with open(full_path, 'wb') as datafile:
+        with open(full_path + '.data', 'wb') as datafile:
             pickle.dump(spellchecker, datafile)
         return True
 
@@ -267,7 +282,7 @@ def load_spellchecker(language, spellcheckers):
         # Remove the first added spellchecker if we already have 3
         del spellcheckers[list(spellcheckers.keys())[0]]
 
-    paths = get_resource_paths(language)
+    paths = get_resource_paths(language + '.data')
     for path_to_spellchecker in paths:
         try:
             # Try loading the spellchecker and returning it
