@@ -27,7 +27,13 @@ class CreateProject(tk.Toplevel):
         self.name_label = tk.Label(self, text='Project Name')
         self.name_entry = tk.Entry(self)
         self.lang_label = tk.Label(self, text='Project Language')
-        self.lang_entry = tk.Entry(self)
+
+        languages = [l.title() for l in language_dict.keys() if len(l) > 2]
+        self.lang_entry = tk.StringVar(self, languages[0])
+        self.lang_dmenu = tk.OptionMenu(self,
+                                        self.lang_entry,
+                                        *languages)
+
         self.catnum_label = tk.Label(self, text='Number of Categories')
         self.catnum_entry = tk.Entry(self)
 
@@ -41,7 +47,7 @@ class CreateProject(tk.Toplevel):
         self.name_label.pack()
         self.name_entry.pack()
         self.lang_label.pack()
-        self.lang_entry.pack()
+        self.lang_dmenu.pack()
         self.catnum_label.pack()
         self.catnum_entry.pack()
         self.create_button.pack()
