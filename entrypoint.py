@@ -24,4 +24,6 @@ pyinstaller DocumentAnalyzer.spec
 '''
 
 if __name__ == '__main__':
+    # from DocumentAnalyzer.utility import create_all_spellcheckers
+    # create_all_spellcheckers()
 	main()
