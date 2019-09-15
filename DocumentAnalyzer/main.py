@@ -457,8 +457,6 @@ def main():
     App.mainloop()
 
 if __name__ == '__main__':
-    #from utility import create_all_spellcheckers
-    #create_all_spellcheckers()
     main()
 
     '''
