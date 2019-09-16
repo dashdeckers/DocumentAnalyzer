@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter.font import Font
 from tkinter import messagebox as msg
 
 try:
@@ -21,7 +22,7 @@ class CreateProject(tk.Toplevel):
         super().__init__()
         self.master = master
         self.title('Create a new project')
-        self.geometry('300x200')
+        self.geometry('300x250')
 
         # GUI stuff
         self.name_label = tk.Label(self, text='Project Name')
@@ -35,7 +36,12 @@ class CreateProject(tk.Toplevel):
                                         *languages)
 
         self.catnum_label = tk.Label(self, text='Number of Categories')
-        self.catnum_entry = tk.Entry(self)
+        self.catnum_entry = tk.Spinbox(self,
+                                       from_=1,
+                                       to=99,
+                                       width=3,
+                                       font=Font(family='Helvetica', size=11),
+                                       state='readonly')
 
         self.create_button = tk.Button(self,
                                        text='Create Project',
@@ -45,12 +51,12 @@ class CreateProject(tk.Toplevel):
 
         # Packing
         self.name_label.pack()
-        self.name_entry.pack()
+        self.name_entry.pack(pady=5)
         self.lang_label.pack()
-        self.lang_dmenu.pack()
+        self.lang_dmenu.pack(pady=5)
         self.catnum_label.pack()
-        self.catnum_entry.pack()
-        self.create_button.pack()
+        self.catnum_entry.pack(pady=5)
+        self.create_button.pack(pady=15)
 
     def create_project(self, event=None):
         '''Sets the project name, number of categories and language based
