@@ -13,7 +13,8 @@ cd Document-Histograms
 pyinstaller --clean --onefile --noconsole --icon=doc.ico --name DocumentAnalyzer entrypoint.py
 - Better to use the specfile in which we have specified the Resource folder
 pyinstaller DocumentAnalyzer.spec
-- Replace the .exe in project directory with the new .exe in the dist folder
+
+> Replace the .exe in project directory with the new .exe in the dist folder
 
 > Use Inno Setup to create an installation executable from the app exe:
 - Open the InnoSetup_Script.iss file with Inno Setup and compile

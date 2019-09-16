@@ -2,24 +2,29 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Document Analyzer"
-#define MyAppVersion "1"
+#define MyAppVersion "1.0"
 #define MyAppPublisher "Travis Hammond"
+#define MyAppURL "https://github.com/dashdeckers/DocumentAnalyzer"
 #define MyAppExeName "DocumentAnalyzer.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{0B98177A-3559-4868-9574-EB90E4130DB9}
+AppId={{9AA1FE8D-2C7B-4B7B-BDA0-6971C9E733B2}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\{#MyAppName}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
+DefaultDirName=Document Analyzer\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=C:\Users\Travis Hammond\Document-Histograms\LICENSE
 InfoAfterFile=C:\Users\Travis Hammond\Document-Histograms\README.md
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
+OutputDir=Output_Installer
 OutputBaseFilename=DocumentAnalyzer
 SetupIconFile=C:\Users\Travis Hammond\Document-Histograms\doc.ico
 Compression=lzma
@@ -28,20 +33,11 @@ WizardStyle=modern
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
-Name: "german"; MessagesFile: "compiler:Languages\German.isl"
-
-[Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Travis Hammond\Document-Histograms\DocumentAnalyzer.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Travis Hammond\Document-Histograms\dist\DocumentAnalyzer.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-
-[Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
