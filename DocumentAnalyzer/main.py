@@ -290,8 +290,8 @@ class DocumentAnalyzer(tk.Tk):
             assert len(lines) == 4 + self.n_cats, strings['n_cat_lines_err']
 
             for cat in range(4, 4 + self.n_cats):
-                cat_name = ' '.join(lines[cat][1:])
-                self.categories[cat_name] = list()
+                catname = ' '.join(lines[cat][1:])
+                self.categories[catname] = list()
             return True
 
         except ValueError:
@@ -337,13 +337,14 @@ class DocumentAnalyzer(tk.Tk):
             self.clear_current_project()
 
     def sync_project(self, event=None):
-        '''Synchronize the project by synchronizing wordlists, filehistory
-        and category wordlists.
+        '''Synchronize the project by synchronizing wordlists, filehistory,
+        category wordlists, and results.
         '''
         if self.project_currently_open():
             self.sync_wordlists()
             self.sync_filehistory()
             self.sync_files()
+            self.write_results()
 
     def sync_wordlists(self):
         '''Synchronizes the wordlists such that the category files contain
@@ -443,6 +444,21 @@ class DocumentAnalyzer(tk.Tk):
         except FileNotFoundError as e:
             msg.showerror('Filehistory file error',
                 strings['filehistory_missing'](e))
+
+    def write_results(self):
+        '''Writes the results to the results.txt file, overwriting the
+        contents.
+        '''
+        self.results.calculate_results()
+
+        results_path = join('.', self.project_name, 'results.txt')
+        with open(results_path, 'w') as results_file:
+            results_file.write('Category name: Word count\n')
+
+            for catname in list(self.categories.keys()):
+                if catname in self.results.res_values:
+                    res = f'{catname}: {self.results.res_values[catname]}\n'
+                    results_file.write(res)
 
     def project_currently_open(self):
         '''Checks if a project is currently open.
