@@ -55,6 +55,7 @@ class ExtractTab(tk.Frame):
         self.extract_text.insert('1.0', self.default_text)
         self.extract_text.configure(state='disabled')
         self.extract_text.focus_force()
+        self.master.bind('<Any-KeyPress>', self.hide_corrections)
 
         # Packing
         self.extract_filename.pack(side='left', fill='both')
@@ -192,25 +193,13 @@ class ExtractTab(tk.Frame):
             # Put the menu where it belongs and bind the relevant keys
             x, y = self.winfo_pointerx(), self.winfo_pointery() + int(self.master.font_size / 2)
             self.corrections_menu.post(x, y)
-            self.corrections_menu.bind('<Escape>', self.hide_corrections)
-            self.extract_text.bind('<Down>', self.focus_corrections_menu)
 
     def hide_corrections(self, event=None):
         '''Hide the menu showing the list of corrections.
         '''
         try:
             self.corrections_menu.destroy()
-            self.extract_text.unbind('<Down>')
         except AttributeError:
-            pass
-
-    def focus_corrections_menu(self, event=None):
-        '''Set the GUI focus to the corrections menu.
-        '''
-        try:
-            self.corrections_menu.focus()
-            self.corrections_menu.entryconfig(0, state='active')
-        except tk.TclError:
             pass
 
     def replace_word(self, word, index):
