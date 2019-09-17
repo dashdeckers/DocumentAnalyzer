@@ -46,7 +46,9 @@ class ExtractTab(tk.Frame):
                                             anchor='e')
         self.extract_text = tk.Text(self,
                                     font=(None, self.master.font_size),
-                                    wrap='word')
+                                    wrap='word',
+                                    undo=True,
+                                    autoseparators=False)
         self.scrollbar = tk.Scrollbar(self, orient='vertical')
         self.extract_text.configure(yscrollcommand=self.scrollbar.set)
         self.extract_text.tag_configure("misspelled",
@@ -55,7 +57,6 @@ class ExtractTab(tk.Frame):
         self.extract_text.insert('1.0', self.default_text)
         self.extract_text.configure(state='disabled')
         self.extract_text.focus_force()
-        self.master.bind('<Any-KeyPress>', self.hide_corrections)
 
         # Packing
         self.extract_filename.pack(side='left', fill='both')
@@ -89,11 +90,13 @@ class ExtractTab(tk.Frame):
                 # Add a space at the end to make sure the replace_word()
                 # function always works.
                 self.extract_text.insert('end', ' ')
+                self.extract_text.edit_reset()
                 self.spellcheck()
         else:
             self.extract_text.delete('1.0', 'end')
             self.extract_text.insert('1.0', self.default_text)
             self.extract_text.configure(state='disabled')
+            self.extract_text.edit_reset()
 
         self.update_fileprogress()
 
@@ -138,6 +141,7 @@ class ExtractTab(tk.Frame):
             self.master.sync_filehistory()
 
         self.refresh_extract()
+        return 'break'
 
     def reparse(self):
         '''Discard the text currently in the text field and replace it with
@@ -212,14 +216,16 @@ class ExtractTab(tk.Frame):
         * index (str): The index at which the word can be found that
         should be replaced.
         '''
+        self.extract_text.edit_separator()
         self.extract_text.delete(index + ' wordstart', index + ' wordend')
         self.extract_text.insert('insert', word)
+        self.extract_text.edit_separator()
 
     def spellcheck(self, event=None):
         '''Highlight each word in the text field that is misspelled.
         '''
         if not self.master.files_todo or not self.master.spell:
-            return
+            return 'break'
 
         self.extract_text.tag_remove('misspelled', '1.0', 'end')
 
@@ -234,3 +240,40 @@ class ExtractTab(tk.Frame):
                 if word not in self.master.spell._words:
                     self.extract_text.tag_add('misspelled', index, word_end_index)
                 index = word_end_index
+
+        return 'break'
+
+    def on_space_press(self, event=None):
+        '''Run the spellchecker and add an edit separator everytime the space
+        bar is pressed.
+        '''
+        self.extract_text.edit_separator()
+        self.spellcheck()
+
+    def find(self, event=None):
+        '''TODO: Implement this method, it should find a string and highlight
+        it for the user (also move the view to center around it).
+        '''
+        return 'break'
+
+    def undo(self, event=None):
+        '''Undo the last edit using the built in method in the Text widget.
+        '''
+        try:
+            self.extract_text.edit_undo()
+            self.spellcheck()
+        except tk.TclError:
+            pass
+
+        return 'break'
+
+    def redo(self, event=None):
+        '''Redo the last edit using the built in method in the Text widget.
+        '''
+        try:
+            self.extract_text.edit_redo()
+            self.spellcheck()
+        except tk.TclError:
+            pass
+
+        return 'break'

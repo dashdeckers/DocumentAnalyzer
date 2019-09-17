@@ -32,6 +32,15 @@ except ImportError as e:
         strings,
     )
 
+'''
+Ctrl + f shortcut to find in text.
+
+Delete all occurances of a phrase from the text.
+--> Related to headers. Check why the header was gone too.
+
+(Recent projects menu. Persist folder names? Necessary?)
+'''
+
 
 class DocumentAnalyzer(tk.Tk):
     '''
@@ -71,22 +80,18 @@ class DocumentAnalyzer(tk.Tk):
         self.menu.add_cascade(label='Edit', menu=self.menu_edit)
 
         self.menu_project.add_command(label='Create new project',
-                                      command=self.show_new_project_popup,
-                                      accelerator='Ctrl+N')
+                                      command=self.show_new_project_popup)
         self.menu_project.add_command(label='Open existing project',
                                       command=self.open_project,
-                                      accelerator='Ctrl+O')
+                                      accelerator='Ctrl+o')
         self.menu_project.add_command(label='Synchronize current project',
                                       command=self.sync_project,
-                                      accelerator='Ctrl+R')
+                                      accelerator='Ctrl+s')
         self.menu_edit.add_command(label='Save & next document',
                                    command=self.extract.next_file,
-                                   accelerator='Ctrl+S')
+                                   accelerator='Ctrl+n')
         self.menu_edit.add_command(label='Redo current document',
                                    command=self.extract.reparse)
-        self.menu_edit.add_command(label='Spellcheck',
-                                   command=self.extract.spellcheck,
-                                   accelerator='Ctrl+P')
 
         # Packing
         self.notebook.add(self.extract, text='Extract Text')
@@ -147,6 +152,8 @@ class DocumentAnalyzer(tk.Tk):
 
         self.extract.filename_var.set('')
         self.extract.filenumber_var.set('')
+        self.extract.edit_status = 'Init'
+        self.extract.extract_text.edit_reset()
 
         self.classify.destroy_cat_buttons()
         self.classify.cat_buttons = None
@@ -174,20 +181,20 @@ class DocumentAnalyzer(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.notebook.bind('<<NotebookTabChanged>>', self.refresh_settings)
-        self.notebook.bind('<Control-n>', self.show_new_project_popup)
-        self.notebook.bind('<Control-o>', self.open_project)
-        self.notebook.bind('<Control-r>', self.sync_project)
 
-        self.extract.extract_text.bind('<Control-p>', self.extract.spellcheck)
-        self.extract.extract_text.bind('<Control-s>', self.extract.next_file)
-        self.extract.extract_text.bind('<Control-o>', self.open_project)
-        self.extract.extract_text.bind('<Control-r>', self.sync_project)
+        self.bind_all('<Control-o>', self.open_project)
+        self.bind_all('<Control-s>', self.sync_project)
+        self.bind_all('<Leave>', self.extract.spellcheck)
+        self.bind_all('<FocusOut>', self.extract.hide_corrections)
+        self.bind_all('<Any-KeyPress>', self.extract.hide_corrections)
+
+        self.extract.extract_text.bind('<space>', self.extract.on_space_press)
+        self.extract.extract_text.bind('<Control-f>', self.extract.find)
+        self.extract.extract_text.bind('<Control-z>', self.extract.undo)
+        self.extract.extract_text.bind('<Control-y>', self.extract.redo)
+        self.extract.extract_text.bind('<Control-n>', self.extract.next_file)
         self.extract.extract_text.bind('<ButtonRelease-1>',
                                        self.extract.show_corrections)
-        self.extract.extract_text.bind('<Escape>',
-                                       self.extract.hide_corrections)
-        self.extract.extract_text.bind('<FocusOut>',
-                                       self.extract.hide_corrections)
 
         if self.notebook.tab(self.notebook.select(), 'text') == 'Classify':
             for i, catname in enumerate(list(self.categories.keys())):
@@ -319,7 +326,7 @@ class DocumentAnalyzer(tk.Tk):
 
         folder = filedialog.askdirectory()
         if not folder:
-            return
+            return 'break'
 
         self.clear_current_project()
 
@@ -336,6 +343,8 @@ class DocumentAnalyzer(tk.Tk):
         else:
             self.clear_current_project()
 
+        return 'break'
+
     def sync_project(self, event=None):
         '''Synchronize the project by synchronizing wordlists, filehistory,
         category wordlists, and results.
@@ -345,6 +354,8 @@ class DocumentAnalyzer(tk.Tk):
             self.sync_filehistory()
             self.sync_files()
             self.write_results()
+
+        return 'break'
 
     def sync_wordlists(self):
         '''Synchronizes the wordlists such that the category files contain
