@@ -16,7 +16,7 @@
 
 1. Open your file explorer and navigate to the folder you specified during the installation.
 
-2. Open the program by double-clicking on it and create a new project using the drop down menu "Project", or use the keyboard shortcut "Ctrl + n". Be aware that the program might take a few minutes to open, depending on your computer.
+2. Open the program by double-clicking on it and create a new project using the drop down menu "Project". Be aware that the program might take a few minutes to open, depending on your computer.
 
 3. In the pop-up window, provide the name of the project and choose a language from the drop down menu. This is the language that you expect the pdf files to be in, and the spellchecker will be set to that language for this project. Then, specify how many wordlists / categories you want your project to have and click "Create Project".
 
@@ -24,13 +24,16 @@
 
 5. In the file explorer, you will notice that a new folder with the name of your project has appeared. Open that folder and copy the pdf files you wish to analyze into the folder names "PDF_Files".
 
-6. In the program, refresh / synchronize the project using the drop down menu "Project", or use the keyboard shortcut "Ctrl + r". You should now see the attempted transcription of the first pdf file. Be aware that there will likely be many mistakes, unfortunately this cannot be avoided. You can edit this text file directly until it is correct, and you can use the spellchecker by clicking on a red underlined word. Re-run the spellchecker using the drop-down menu "Edit", or the keyboard shortcut "Ctrl + p". Once the text has been corrected, save the text using the drop-down menu "Edit" or the keyboard shortcut "Ctrl + s".
+6. In the program, synchronize the project using the drop down menu "Project", or use the keyboard shortcut "Ctrl + s". You should now see the attempted transcription of the first pdf file. Be aware that there will likely be many mistakes, unfortunately this cannot be avoided. 
 
-7. Saving the text will automatically transcribe the next pdf file. Once you are done extracting the text from the pdf files, you can click on the "Classify" tab to assign words to categories. In this tab, you will see a word highlighted in red, and the context in which it is in. Assign the word to one of the available categories by clicking on the name of the category, or by clicking on the corresponding number on the keyboard. Once a word has been assigned to a category, every subsequent occurance of the word will be skipped. If you wish to assign a word to two categories, you must open the text file in the project folder corresponding to the category name, type in the word manually, and save the file.
+7. You can now edit this text file until it is correct. The spellchecker can help you do this, if you click on a red underlined word and then on one of the corrections it will replace that word. Once you are satisfied with the transcription, save the text and open the next pdf using the drop-down menu "Edit" or the keyboard shortcut "Ctrl + n".
 
-8. Don't forget to synchronize / refresh the project using the drop-down menu "Project", or the keyboard shortcut "Ctrl + r", to save your progress to the files in the project folder! This also updates the program to any changes made to those files directly (for example by adding a word to a category manually, as described in step 7).
+8. When you are done extracting the text from your pdf files, you can click on the "Classify" tab to assign words to categories. In this tab, you will see a word highlighted in red, and the context in which it is in. Assign the highlighted word to one of the available categories by clicking on the name of the category, or by clicking on the corresponding number on the keyboard. Once a word has been assigned to a category, every subsequent occurance of the word will be skipped. 
+(If you want to assign a word to two categories, you have to do that manually: Open the category file in the project folder, type in the word, save the file and refresh the project. See the 'Project Files' section under 'More Details' for more information).
 
-9. Use the tabs "Results" and "View Data" to see the word counts for each category and the words assigned to each category, respectively. Synchronizing / refreshing your project will also write the newest results to the results.txt file which you can find in the project folder.
+9. Don't forget to synchronize the project using the drop-down menu "Project", or the keyboard shortcut "Ctrl + s", to save your progress to the files in the project folder! This also updates the program to any changes made to those files directly (for example by adding a word to a category manually, as described in step 8).
+
+10. Use the tabs "Results" and "View Data" to see the word counts for each category and the words assigned to each category, respectively. Synchronizing your project will also write the newest results to the results.txt file which you can find in the project folder.
 
 
 ## More Details
