@@ -36,9 +36,29 @@ except ImportError as e:
 Ctrl + f shortcut to find in text.
 
 Delete all occurances of a phrase from the text.
---> Related to headers. Check why the header was gone too.
 
-(Recent projects menu. Persist folder names? Necessary?)
+Use Europarl corpus for better and smaller language files.
+
+Grayscale images and compare performance?
+
+More context.
+
+Results total for wordlists.
+
+Results per document in results folder.
+
+Wordlist to excel and back.
+
+
+Manual Headers to explain:
+# Uploading
+# Conversion
+# Assigning to cat
+# Importing wordlists from another proj
+# Running analysis results
+# Description of results file
+
+Remind people to re-run the analysis for new results
 '''
 
 
