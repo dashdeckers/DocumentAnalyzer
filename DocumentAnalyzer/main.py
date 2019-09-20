@@ -33,21 +33,23 @@ except ImportError as e:
     )
 
 '''
-Ctrl + f shortcut to find in text.
+Use Europarl corpus for better and smaller language files.
+
+More context (5 per side).
+
+Results: freq totals in wordlists.
+
+Results: freq per document in a results folder.
+
+Ctrl + f shortcut to find in text (google this?).
 
 Delete all occurances of a phrase from the text.
 
-Use Europarl corpus for better and smaller language files.
+Bug: Grayed out menu items sometimes? Especially edit? (Next doc!)
 
 Grayscale images and compare performance?
 
-More context.
-
-Results total for wordlists.
-
-Results per document in results folder.
-
-Wordlist to excel and back.
+(Wordlist to excel and back.)
 
 
 Manual Headers to explain:

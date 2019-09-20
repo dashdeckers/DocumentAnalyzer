@@ -25,6 +25,10 @@ pyinstaller DocumentAnalyzer.spec
 '''
 
 if __name__ == '__main__':
-    # from DocumentAnalyzer.utility import create_all_spellcheckers
-    # create_all_spellcheckers()
-	main()
+    # import cProfile
+    # cProfile.run('main()', 'profiling_data')
+
+    # from DocumentAnalyzer.utility import process_all_corpora
+    # process_all_corpora()
+
+    main()
