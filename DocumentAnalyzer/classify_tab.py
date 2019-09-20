@@ -30,20 +30,21 @@ class ClassifyTab(tk.Frame):
         self.words_togo = list()
         self.text_tokens = list()
         self.text_files_done = list()
+        self.context_range = 5
 
         # GUI stuff
         self.c_frame = ttk.Frame(self)
         self.c_words = list()
         self.c_labels = list()
-        for i in range(5):
+        for i in range(2 * self.context_range + 1):
             self.c_words.append(tk.StringVar(self.c_frame, value=''))
             self.c_labels.append(ttk.Label(self.c_frame,
                                             textvar=self.c_words[-1]))
-        self.c_labels[2].configure(style='WORD.TLabel')
+        self.c_labels[self.context_range].configure(style='WORD.TLabel')
         self.buttons_frame = ttk.Frame(self)
 
         # Packing
-        for i in range(5):
+        for i in range(2 * self.context_range + 1):
             self.c_labels[i].pack(side='left', expand=1)
         self.c_frame.pack(side='top', fill='x', expand=1)
         self.buttons_frame.pack(side='bottom', fill='both', expand=1)
@@ -68,7 +69,7 @@ class ClassifyTab(tk.Frame):
         '''Add the current word to the corresponding category,
         depending on which button was pressed, and get the next word.
         '''
-        word = self.c_words[2].get()
+        word = self.c_words[self.context_range].get()
         if not word == 'Finished!':
             self.master.categories[catname].append(word)
         self.next_word()
@@ -87,39 +88,26 @@ class ClassifyTab(tk.Frame):
         each containing up to two words.
         '''
         if word == 'Finished!' and not context:
-            for i in range(5):
+            for i in range(2 * self.context_range + 1):
                 self.c_words[i].set('')
-            self.c_words[2].set(word)
+            self.c_words[self.context_range].set(word)
             return
 
         if not context and not word:
-            for i in range(5):
+            for i in range(2 * self.context_range + 1):
                 self.c_words[i].set('')
 
         else:
             # Left context
-            if len(context[0]) == 2:
-                self.c_words[0].set(context[0][0])
-                self.c_words[1].set(context[0][1])
-
-            if len(context[0]) == 1:
-                self.c_words[0].set('')
-                self.c_words[1].set(context[0][0])
-
-            if len(context[0]) == 0:
-                self.c_words[0].set('')
-                self.c_words[1].set('')
+            for i in range(0, self.context_range):
+                self.c_words[i].set(context[0][i])
 
             # Word
-            self.c_words[2].set(word)
+            self.c_words[self.context_range].set(word)
 
             # Right context
-            for i in [0,1]:
-                try:
-                    self.c_words[3+i].set(context[1][i])
-                except IndexError as e:
-                    self.c_words[3+i].set('')
-                    pass
+            for i in range(0, self.context_range):
+                self.c_words[self.context_range+1+i].set(context[1][i])
 
 
     def next_word(self):
@@ -140,7 +128,9 @@ class ClassifyTab(tk.Frame):
                     return
 
             if self.words_togo:
-                context = get_context(self.text_tokens, self.words_togo[0])
+                context = get_context(self.text_tokens,
+                                      self.words_togo[0],
+                                      self.context_range)
                 self.insert_next_context(self.words_togo[0], context)
 
     def get_next_text(self):

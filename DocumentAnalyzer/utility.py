@@ -358,6 +358,11 @@ def get_context(tokens=None, word=None, context_range=2, show_all=False):
             if show_all:
                 all_contexts.append(context_split)
             else:
+                while len(context_split[0]) < context_range:
+                    context_split[0].insert(0, '')
+                while len(context_split[1]) < context_range:
+                    context_split[1].append('')
                 return context_split
 
     return all_contexts
+
