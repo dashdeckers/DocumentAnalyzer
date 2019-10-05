@@ -214,7 +214,6 @@ class DocumentAnalyzer(tk.Tk):
 
         self.bind_all('<Control-o>', self.open_project)
         self.bind_all('<Control-s>', self.sync_project)
-        self.bind_all('<Leave>', self.extract.spellcheck)
         self.bind_all('<FocusOut>', self.extract.hide_corrections)
         self.bind_all('<Any-KeyPress>', self.extract.hide_corrections)
 
