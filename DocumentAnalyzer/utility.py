@@ -24,7 +24,6 @@ language_dict = {
     'lithuanian' : 'lt',
     'danish'     : 'da',
     'swedish'    : 'sv',
-    'norwegian'  : 'no',
     'italian'    : 'it',
 
     'en' : 'english',
@@ -35,7 +34,6 @@ language_dict = {
     'lt' : 'lithuanian',
     'da' : 'danish',
     'sv' : 'swedish',
-    'no' : 'norwegian',
     'it' : 'italian',
 }
 
@@ -90,6 +88,7 @@ def text_extracter(path_to_file=None):
     '''Extracts text from a pdf or txt file.
 
     TODO: Add support for .doc files.
+    TODO: Do some minimal image pre-processing.
 
     **Args**:
 

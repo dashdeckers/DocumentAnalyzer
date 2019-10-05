@@ -6,12 +6,11 @@ from os.path import join, isfile, split
 from tkinter import messagebox as msg
 from tkinter import filedialog
 from time import time
+import csv
 
 try:
     from DocumentAnalyzer.extract_tab import ExtractTab
     from DocumentAnalyzer.classify_tab import ClassifyTab
-    from DocumentAnalyzer.results_tab import ResultsTab
-    from DocumentAnalyzer.dataview_tab import DataviewTab
     from DocumentAnalyzer.popups import CreateProject
     from DocumentAnalyzer.utility import (
         load_spellchecker,
@@ -22,8 +21,6 @@ try:
 except ImportError as e:
     from extract_tab import ExtractTab
     from classify_tab import ClassifyTab
-    from results_tab import ResultsTab
-    from dataview_tab import DataviewTab
     from popups import CreateProject
     from utility import (
         load_spellchecker,
@@ -33,25 +30,52 @@ except ImportError as e:
     )
 
 '''
-Use Europarl corpus for better and smaller language files.
+/Use Europarl corpus for better and smaller language files.
 
-More context (5 per side).
+/More context (5 per side).
 
-Results: freq totals in wordlists.
 
-Results: freq per document in a results folder.
+###
+Results:
 
-Ctrl + f shortcut to find in text (google this?).
+First collect a frequency dictionary (word, freq) for each file, then:
+Create one big excel file for each wordlist.
 
-Delete all occurances of a phrase from the text.
+Each excel has words as rows and filenames as columns.
+How often word X occurs in file Y: Check position (X, Y)
+How often word X occurs across all files (= wordlist freq): sum up row X
+###
 
+
+###
+Check out this article:
+http://www.bitforestinfo.com/2017/05/how-to-create-find-findall-replace-and-replaceall-function-in-tkinter-text-widget-python-magicstick-text-editor.html
+
+We want to be able to find a string (ask via popup), and then highlight all
+occurrances of that string. Show somewhere how many occurrances you found.
+We also want to be able to delete all occurrances of that string, so the popup
+asking the user for the string should have the options:
+- Find
+- Delete
+- Cancel
+
+Use tk.text.see(index) to scroll the text until the user can see that index.
+Maybe show the first occurrance.
+
+Map the shortcut to Control+f and name it something like find/delete.
+When adding the menu items, update the update_menu function in main and while
+you are at it, check for this bug:
 Bug: Grayed out menu items sometimes? Especially edit? (Next doc!)
+###
+
 
 Grayscale images and compare performance?
 
-(Wordlist to excel and back.)
+Add a list of language specific stopwords to the discard category and mention
+this to the user in the manual specifically
 
 
+###
 Manual Headers to explain:
 # Uploading
 # Conversion
@@ -61,6 +85,7 @@ Manual Headers to explain:
 # Description of results file
 
 Remind people to re-run the analysis for new results
+###
 '''
 
 
@@ -91,8 +116,6 @@ class DocumentAnalyzer(tk.Tk):
         # Tabs
         self.extract = ExtractTab(self)
         self.classify = ClassifyTab(self)
-        self.results = ResultsTab(self)
-        self.dataview = DataviewTab(self)
 
         # Menu
         self.menu = tk.Menu(self)
@@ -118,8 +141,6 @@ class DocumentAnalyzer(tk.Tk):
         # Packing
         self.notebook.add(self.extract, text='Extract Text')
         self.notebook.add(self.classify, text='Classify')
-        self.notebook.add(self.results, text='Results')
-        self.notebook.add(self.dataview, text='View Data')
         self.notebook.pack(fill='both', expand=1)
         self.config(menu=self.menu)
 
@@ -137,10 +158,6 @@ class DocumentAnalyzer(tk.Tk):
             self.extract.refresh_extract()
         if current_tab == 'Classify':
             self.classify.refresh_classify()
-        if current_tab == 'Results':
-            self.results.refresh_results()
-        if current_tab == 'View Data':
-            self.dataview.refresh_dataview()
 
     def update_menu(self):
         '''Set the state of the menu items depending on whether a project
@@ -184,16 +201,7 @@ class DocumentAnalyzer(tk.Tk):
         self.classify.words_togo = list()
         self.classify.insert_next_context()
 
-        self.results.res_labels = None
-        self.results.res_values = dict()
-        self.results.destroy_labels()
-
-        self.dataview.selected_data_view.set('File History')
-        self.dataview.data_view_selector['values'] = ['File History']
-        self.dataview.data_view_selector.current(0)
-
         self.classify.refresh_classify()
-        self.dataview.refresh_dataview()
         self.extract.refresh_extract()
 
     def set_bindings(self):
@@ -283,7 +291,6 @@ class DocumentAnalyzer(tk.Tk):
         print(f'Loaded the spellchecker in {time()-t0}')
         self.title(self.project_name)
         self.classify.refresh_classify()
-        self.dataview.refresh_dataview()
         self.extract.refresh_extract()
 
     def parse_project_info_file(self, folder):
@@ -359,7 +366,6 @@ class DocumentAnalyzer(tk.Tk):
             self.sync_project()
             self.title(self.project_name)
             self.classify.refresh_classify()
-            self.dataview.refresh_dataview()
             self.extract.refresh_extract()
             self.refresh_settings()
         else:
@@ -369,7 +375,7 @@ class DocumentAnalyzer(tk.Tk):
 
     def sync_project(self, event=None):
         '''Synchronize the project by synchronizing wordlists, filehistory,
-        category wordlists, and results.
+        category wordlists, and writing the results to file.
         '''
         if self.project_currently_open():
             self.sync_wordlists()
@@ -391,6 +397,7 @@ class DocumentAnalyzer(tk.Tk):
                 with open(catfile_path, 'r') as file:
                     catfile_contents = file.read().splitlines()
                     combined = self.categories[catname] + catfile_contents
+                    # TODO: Use a set here, and then write to file in alph. order
                     no_duplicates = list()
                     for word in combined:
                         if word not in no_duplicates:
@@ -478,20 +485,78 @@ class DocumentAnalyzer(tk.Tk):
             msg.showerror('Filehistory file error',
                 strings['filehistory_missing'](e))
 
-    def write_results(self):
-        '''Writes the results to the results.txt file, overwriting the
-        contents.
+    def calculate_frequency_dictionaries(self):
+        '''Calculate the frequencies: For each document, create a frequency
+        dictionary which counts the frequencies of each word in each document.
         '''
-        self.results.calculate_results()
+        if not self.project_currently_open():
+            return
 
-        results_path = join('.', self.project_name, 'results.txt')
-        with open(results_path, 'w') as results_file:
-            results_file.write('Category name: Word count\n')
+        # Get the list of filenames from the text files folder
+        f_dir = join('.', self.project_name, text_folder)
+        files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))
+                                            and f.endswith('.txt')]
 
-            for catname in list(self.categories.keys()):
-                if catname in self.results.res_values:
-                    res = f'{catname}: {self.results.res_values[catname]}\n'
-                    results_file.write(res)
+        if not files:
+            # TODO: Should overwrite the csv file with a blank to be consistent
+            return
+
+        # Make a word frequency dictionary for each file
+        all_fdicts = dict.fromkeys(files)
+        for file in files:
+
+            fdict = dict()
+            with open(join(f_dir, file), 'r') as text_file:
+                text_tokens = text_file.read().split()
+                for word in text_tokens:
+                    if word in fdict:
+                        fdict[word] += 1
+                    else:
+                        fdict[word] = 1
+
+            all_fdicts[file] = fdict
+
+        return all_fdicts
+
+    def write_results(self):
+        '''Writes the results to files: For each wordlist, create a csv text
+        file containing the words in that wordlist as rows and the filenames
+        as columns so that we have one table for each wordlist and each table
+        containing the frequencies of each word in each document.
+        '''
+        all_fdicts = self.calculate_frequency_dictionaries()
+        if all_fdicts is None:
+            return
+
+        # Each filename gets a column, this is the same across wordlists
+        num_cols = len(all_fdicts)
+        col_names = ['---'] + list(all_fdicts.keys())
+
+        # Each wordlist gets its own file
+        for catname in list(self.categories.keys()):
+
+            # Each word in the wordlist gets a row
+            num_rows = len(self.categories[catname])
+            row_names = self.categories[catname]
+
+            # CSV data is a matrix with filenames as cols and words as rows
+            csv_data = [ [row_names[row]] + [0] * num_cols 
+                                 for row in range(num_rows) ]
+            csv_data.insert(0, col_names)
+
+            # Fill in the matrix
+            for word in self.categories[catname]:
+                for filename, fdict in all_fdicts.items():
+                    row_idx = row_names.index(word) + 1
+                    col_idx = col_names.index(filename)
+                    if word in fdict:
+                        csv_data[row_idx][col_idx] = fdict[word]
+
+            # Write the CSV to file
+            results_path = join('.', self.project_name)
+            with open(join(results_path, f'{catname}.csv'), 'w') as res_file:
+                writer = csv.writer(res_file)
+                writer.writerows(csv_data)
 
     def project_currently_open(self):
         '''Checks if a project is currently open.
