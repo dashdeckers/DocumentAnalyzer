@@ -1,8 +1,9 @@
-from nltk.probability import FreqDist
-from lxml import etree
 import os
 import re
 import time
+
+from nltk.probability import FreqDist
+from lxml import etree
 
 def get_words_from_xml(path_to_xml, tag='w'):
     '''Parse the xml file containing a single language Europarl
@@ -103,6 +104,6 @@ def process_all_corpora():
     '''
     for lang in language_dict:
         if len(lang) == 2:
-            fdist = get_fdist_of_language(lang, 40000)
+            fdist = get_fdist_of_language(lang, 60000)
             write_fdist_to_file(fdist, lang)
 
