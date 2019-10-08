@@ -1,9 +1,11 @@
-from PyPDF2 import PdfFileReader
-from tkinter.ttk import Label
-from os import environ
-from os.path import abspath, join
 import re
 import sys
+
+from PyPDF2 import PdfFileReader
+from tkinter.ttk import Label
+from tkinter import Text, IntVar
+from os import environ
+from os.path import abspath, join
 
 try:
     from DocumentAnalyzer.symspellpy.symspellpy import SymSpell
@@ -45,6 +47,65 @@ class WrappingLabel(Label):
         self.bind('<Configure>',
                   lambda e: self.configure(wraplength=self.winfo_width() - 20))
 
+class CustomText(Text):
+    '''A text widget with two new methods, 
+    tag_pattern() and
+    delete_pattern()
+
+    example:
+
+    text = CustomText()
+    text.tag_configure('red', foreground='#ff0000')
+    text.tag_pattern('this should be red', 'red')
+    text.delete_pattern('this should be deleted')
+
+    The highlight_pattern method is a simplified python
+    version of the tcl code at http://wiki.tcl.tk/3246
+    '''
+    def __init__(self, *args, **kwargs):
+        Text.__init__(self, *args, **kwargs)
+
+    def tag_pattern(self, pattern, tag, start='1.0', end='end',
+                    regexp=False):
+        '''Apply the given tag to all text that matches the given pattern.
+        '''
+        task = 'tag'
+        self._find_or_delete_pattern(pattern, task, tag, start, end, regexp)
+
+    def delete_pattern(self, pattern, start='1.0', end='end',
+                       regexp=False):
+        '''Delete all text that matches the given pattern.
+        '''
+        task = 'delete'
+        tag = None
+        self._find_or_delete_pattern(pattern, task, tag, start, end, regexp)
+
+    def _find_or_delete_pattern(self, pattern, task, tag=None, start='1.0',
+                               end='end', regexp=False):
+
+        assert task in ['tag', 'delete']
+
+        start = self.index(start)
+        end = self.index(end)
+        self.mark_set('matchStart', start)
+        self.mark_set('matchEnd', start)
+        self.mark_set('searchLimit', end)
+
+        count = IntVar()
+        while True:
+            index = self.search(pattern, 'matchEnd', 'searchLimit',
+                                count=count, regexp=regexp)
+            if index == '':
+                break
+            if count.get() == 0:
+                break # degenerate pattern which matches zero-length strings
+            self.mark_set('matchStart', index)
+            self.mark_set('matchEnd', '%s+%sc' % (index, count.get()))
+            if task == 'delete':
+                self.delete('matchStart', 'matchEnd')
+            else:
+                self.tag_add(tag, 'matchStart', 'matchEnd')
+
 def resource_path(relative_path):
     '''Get the absolute path to resource, works for dev and for PyInstaller.
 
@@ -59,7 +120,7 @@ def resource_path(relative_path):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception as e:
-        base_path = environ.get("_MEIPASS2", abspath("."))
+        base_path = environ.get('_MEIPASS2', abspath('.'))
 
     return join(base_path, relative_path)
 
@@ -104,7 +165,7 @@ def text_extracter(path_to_file=None):
         if path_to_file.endswith('.pdf'):
             with open(path_to_file, 'rb') as pdf:
                 pdfreader = PdfFileReader(pdf)
-                full_text = ""
+                full_text = ''
                 for i in range(pdfreader.numPages):
                     page_text = pdfreader.getPage(i).extractText()
                     full_text += page_text
@@ -258,6 +319,11 @@ strings = {
     'save_reminder' : lambda e: (
         f'''Do you want to {e.lower()}? Make sure to save the project '''
          '''first by synchronizing it!'''
+    ),
+
+    'delete_confirmation' : lambda e: (
+        f'''Are you sure you want to delete every occurance of "{e}" from '''
+        '''the text?'''
     ),
 
     'default_text' : (

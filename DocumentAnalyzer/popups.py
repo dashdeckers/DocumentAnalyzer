@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+
 from tkinter.font import Font
 from tkinter import messagebox as msg
 
@@ -16,7 +17,7 @@ except ImportError as e:
 
 class CreateProject(tk.Toplevel):
     '''
-    TODO: Fill this in.
+    Create a new project popup window.
     '''
     def __init__(self, master):
         super().__init__()
@@ -121,7 +122,7 @@ class CreateProject(tk.Toplevel):
 
 class SetCategoryNames(tk.Toplevel):
     '''
-    TODO: Fill this in.
+    Set category names (create new project part 2) popup window.
     '''
     def __init__(self, master):
         super().__init__()
@@ -160,3 +161,46 @@ class SetCategoryNames(tk.Toplevel):
 
         self.destroy()
         self.master.create_new_project()
+
+class FindDelete(tk.Toplevel):
+    '''
+    Find or delete a string from the text popup window.
+    '''
+    def __init__(self, master):
+        super().__init__()
+        self.master = master
+        self.title('Find or Delete')
+        self.minsize(width=300, height=0)
+
+        # GUI stuff
+        self.entry = tk.Entry(self, text='Enter a word or phrase')
+        self.btn_frame = tk.Frame(self)
+        self.find_btn = tk.Button(self.btn_frame,
+                                  text='Find',
+                                  command=self.find)
+        self.delete_btn = tk.Button(self.btn_frame,
+                                    text='Delete',
+                                    command=self.delete)
+        self.bind('<Return>', self.find)
+        self.entry.focus()
+
+        # Packing
+        self.entry.pack(side='top', fill='x', expand=1)
+        self.find_btn.pack(side='left', fill='both', expand=1)
+        self.delete_btn.pack(side='right', fill='both', expand=1)
+        self.btn_frame.pack(side='bottom', fill='x', expand=1)
+
+    def find(self, event=None):
+        '''Wrapper to call the find function.
+        '''
+        string = self.entry.get()
+        self.master.extract.find(string)
+        self.entry.delete(0, 'end')
+
+    def delete(self, event=None):
+        '''Wrapper to call the delete function.
+        '''
+        string = self.entry.get()
+        if msg.askokcancel('Delete', strings['delete_confirmation'](string)):
+            self.master.extract.delete(string)
+        self.entry.delete(0, 'end')

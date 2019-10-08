@@ -1,17 +1,20 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import csv
 
 from os import listdir, mkdir
 from os.path import join, isfile, split
 from tkinter import messagebox as msg
 from tkinter import filedialog
 from time import time
-import csv
 
 try:
     from DocumentAnalyzer.extract_tab import ExtractTab
     from DocumentAnalyzer.classify_tab import ClassifyTab
-    from DocumentAnalyzer.popups import CreateProject
+    from DocumentAnalyzer.popups import (
+        CreateProject,
+        FindDelete,
+    )
     from DocumentAnalyzer.utility import (
         load_spellchecker,
         file_folder,
@@ -21,7 +24,10 @@ try:
 except ImportError as e:
     from extract_tab import ExtractTab
     from classify_tab import ClassifyTab
-    from popups import CreateProject
+    from popups import (
+        CreateProject,
+        FindDelete,
+    )
     from utility import (
         load_spellchecker,
         file_folder,
@@ -91,7 +97,7 @@ Remind people to re-run the analysis for new results
 
 class DocumentAnalyzer(tk.Tk):
     '''
-    TODO: Fill this in.
+    This class contains the entire app.
     '''
     def __init__(self):
         super().__init__()
@@ -137,6 +143,9 @@ class DocumentAnalyzer(tk.Tk):
                                    accelerator='Ctrl+n')
         self.menu_edit.add_command(label='Redo current document',
                                    command=self.extract.reparse)
+        self.menu_edit.add_command(label='Find or delete a phrase/word',
+                                   command=self.find_delete,
+                                   accelerator='Ctrl+f')
 
         # Packing
         self.notebook.add(self.extract, text='Extract Text')
@@ -163,18 +172,21 @@ class DocumentAnalyzer(tk.Tk):
         '''Set the state of the menu items depending on whether a project
         is currently open or not.
         '''
+        num_items_project = self.menu_project.index('end') + 1
+        num_items_edit = self.menu_edit.index('end') + 1
+
         if not self.project_currently_open():
             self.menu_project.entryconfig(2, state='disabled')
-            for i in range(3):
+            for i in range(num_items_edit):
                 self.menu_edit.entryconfig(i, state='disabled')
         else:
-            for i in range(3):
+            for i in range(num_items_project):
                 self.menu_project.entryconfig(i, state='normal')
             if self.files_todo:
-                for i in range(3):
+                for i in range(num_items_edit):
                     self.menu_edit.entryconfig(i, state='normal')
             else:
-                for i in range(3):
+                for i in range(num_items_edit):
                     self.menu_edit.entryconfig(i, state='disabled')
 
     def clear_current_project(self):
@@ -218,7 +230,7 @@ class DocumentAnalyzer(tk.Tk):
         self.bind_all('<Any-KeyPress>', self.extract.hide_corrections)
 
         self.extract.extract_text.bind('<space>', self.extract.on_space_press)
-        self.extract.extract_text.bind('<Control-f>', self.extract.find)
+        self.extract.extract_text.bind('<Control-f>', self.find_delete)
         self.extract.extract_text.bind('<Control-z>', self.extract.undo)
         self.extract.extract_text.bind('<Control-y>', self.extract.redo)
         self.extract.extract_text.bind('<Control-n>', self.extract.next_file)
@@ -241,6 +253,12 @@ class DocumentAnalyzer(tk.Tk):
             self.destroy()
         elif msg.askokcancel('Quit', strings['save_reminder']('Quit')):
             self.destroy()
+
+    def find_delete(self, event=None):
+        '''Show the find/delete popup window.
+        '''
+        if self.project_currently_open():
+            FindDelete(self)
 
     def show_new_project_popup(self):
         '''Asks for user confirmation before clearing the current project

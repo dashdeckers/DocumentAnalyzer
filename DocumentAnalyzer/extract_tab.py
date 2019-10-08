@@ -7,6 +7,7 @@ from functools import partial
 try:
     from DocumentAnalyzer.symspellpy.symspellpy import Verbosity
     from DocumentAnalyzer.utility import (
+        CustomText,
         text_extracter, 
         clean_text,
         file_folder,
@@ -16,6 +17,7 @@ try:
 except ImportError as e:
     from symspellpy.symspellpy import Verbosity
     from utility import (
+        CustomText,
         text_extracter, 
         clean_text,
         file_folder,
@@ -25,7 +27,8 @@ except ImportError as e:
 
 class ExtractTab(tk.Frame):
     '''
-    TODO: Fill this in.
+    This class contains the tab responsible for extracting and editing
+    the text from PDF files.
     '''
     def __init__(self, master):
         super().__init__()
@@ -44,16 +47,18 @@ class ExtractTab(tk.Frame):
         self.extract_filenumber = ttk.Label(self.extract_filefield,
                                             textvar=self.filenumber_var,
                                             anchor='e')
-        self.extract_text = tk.Text(self,
-                                    font=(None, self.master.font_size),
-                                    wrap='word',
-                                    undo=True,
-                                    autoseparators=False)
+        self.extract_text = CustomText(self,
+                                       font=(None, self.master.font_size),
+                                       wrap='word',
+                                       undo=True,
+                                       autoseparators=False)
         self.scrollbar = tk.Scrollbar(self, orient='vertical')
         self.extract_text.configure(yscrollcommand=self.scrollbar.set)
-        self.extract_text.tag_configure("misspelled",
-                                        foreground="red",
+        self.extract_text.tag_configure('misspelled',
+                                        foreground='red',
                                         underline=True)
+        self.extract_text.tag_configure('find',
+                                        background='yellow')
         self.extract_text.insert('1.0', self.default_text)
         self.extract_text.configure(state='disabled')
         self.extract_text.focus_force()
@@ -228,10 +233,12 @@ class ExtractTab(tk.Frame):
             return 'break'
 
         self.extract_text.tag_remove('misspelled', '1.0', 'end')
+        self.extract_text.tag_remove('find', '1.0', 'end')
 
         # Loop through each word in text
         index = '1.0'
         while index:
+            # Get the starting index of the next word
             index = self.extract_text.search(r'\w+', index, 'end', regexp=1)
             if index:
                 word = self.extract_text.get(index, index + ' wordend')
@@ -250,10 +257,24 @@ class ExtractTab(tk.Frame):
         self.extract_text.edit_separator()
         self.spellcheck()
 
-    def find(self, event=None):
-        '''TODO: Implement this method, it should find a string and highlight
-        it for the user (also move the view to center around it).
+    def find(self, string, event=None):
+        '''Highlights all occurrences of the string and centers the view around
+        the first occurrence.
         '''
+        pattern = '\\y' + string + '\\y'
+        self.extract_text.tag_pattern(pattern, 'find', regexp=True)
+
+        return 'break'
+
+    def delete(self, string, event=None):
+        '''Deletes all occurrences of the word or string in the text.
+        '''
+        self.extract_text.edit_separator()
+
+        pattern = '\\y' + string + '\\y'
+        self.extract_text.delete_pattern(pattern, regexp=True)
+
+        self.spellcheck()
         return 'break'
 
     def undo(self, event=None):

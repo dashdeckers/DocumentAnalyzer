@@ -19,7 +19,8 @@ except ImportError as e:
 
 class ClassifyTab(tk.Frame):
     '''
-    TODO: Fill this in.
+    This class contains the tab responsible for classifying each word into
+    one of the categories.
     '''
     def __init__(self, master):
         super().__init__()
