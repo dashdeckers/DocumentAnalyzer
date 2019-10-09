@@ -38,7 +38,7 @@
 
 3. Click on "Open existing project".
 
-4. In the pop-up window, select the project folder you want to open. (!Note that your project folder must be right next to the program, in other words they must both be in the same folder!)
+4. In the pop-up window, select the project folder you want to open.
 
 ### Importing PDF files
 
