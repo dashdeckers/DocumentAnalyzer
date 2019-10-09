@@ -147,7 +147,7 @@ class ClassifyTab(tk.Frame):
         'Done' if it found a text but no unclassified words.
         '''
         if self.master.project_currently_open():
-            f_dir = join('.', self.master.project_name, text_folder)
+            f_dir = join(self.master.folder, text_folder)
             files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))]
 
             if not files:
