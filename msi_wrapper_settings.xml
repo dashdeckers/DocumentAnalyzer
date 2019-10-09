@@ -5,7 +5,7 @@
     <InstallPrivileges Value="Elevated" />
     <PerUser Value="auto" />
     <ElevateExecutable Value="administrators" />
-    <UpgradeCode Value="{1111153C-C170-45D7-801B-0CC56609758B}" />
+    <UpgradeCode Value="{86A98F86-FC84-466B-A671-BE7E3F9C98AD}" />
     <ProductId Value="" />
     <Registration Value="Visible" />
     <Manufacturer Detect="executable" Value="Travis Hammond" />
@@ -19,7 +19,7 @@
   </Installer>
   <WrappedInstaller>
     <Executable FileName="C:\Users\Travis Hammond\Document-Histograms\Output_Installer\DocumentAnalyzer.exe" SuccessCodes="" Impersonate="yes" IncludeFiles="no" CompressionLevel="None" />
-    <ApplicationId Value="{0B403ACB-D280-4178-B8C4-DC6C24DBE163}_is1" />
+    <ApplicationId Value="{0B98177A-3559-4868-9574-EB90E4130DB9}_is1" />
     <Install>
       <Arguments Value="">
         <UILevelNone Value="" />
