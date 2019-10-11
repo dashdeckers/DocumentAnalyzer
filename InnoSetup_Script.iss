@@ -10,7 +10,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{9AA1FE8D-2C7B-4B7B-BDA0-6971C9E733B2}
+AppId={{FA63DEF2-93E3-45A4-AA53-A04F8AE7F850}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -18,13 +18,13 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName=Document Analyzer\{#MyAppName}
+DefaultDirName={userdesktop}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=C:\Users\Travis Hammond\Document-Histograms\LICENSE
 InfoAfterFile=C:\Users\Travis Hammond\Document-Histograms\README.md
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
-OutputDir=Output_Installer
+OutputDir=C:\Users\Travis Hammond\Document-Histograms\Output_Installer
 OutputBaseFilename=DocumentAnalyzer
 SetupIconFile=C:\Users\Travis Hammond\Document-Histograms\doc.ico
 Compression=lzma
@@ -35,9 +35,12 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "C:\Users\Travis Hammond\Document-Histograms\dist\DocumentAnalyzer.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Travis Hammond\Document-Histograms\DocumentAnalyzer.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
