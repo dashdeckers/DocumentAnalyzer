@@ -1,5 +1,6 @@
 import re
 import sys
+import json
 
 from PyPDF2 import PdfFileReader
 from tkinter.ttk import Label
@@ -314,6 +315,24 @@ def get_context(tokens=None, word=None, context_range=2, show_all=False):
                 return context_split
 
     return all_contexts
+
+def get_stopwords(language):
+    language = normalize_language(language)
+    if not language:
+        return
+
+    regex = re.compile('[^a-zA-Z \n]')
+
+    paths = get_resource_paths(f'stopwords.txt')
+    for path_to_stopwords in paths:
+        try:
+            with open(path_to_stopwords, 'r') as file:
+                all_sw = json.load(file)
+                # Clean stopwords before returning them
+                return [regex.sub('', sw) for sw in all_sw[language]]
+
+        except FileNotFoundError:
+            pass
 
 strings = {
     'save_reminder' : lambda e: (

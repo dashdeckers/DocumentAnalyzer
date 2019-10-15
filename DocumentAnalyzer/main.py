@@ -17,6 +17,7 @@ try:
     )
     from DocumentAnalyzer.utility import (
         load_spellchecker,
+        get_stopwords,
         file_folder,
         text_folder,
         strings,
@@ -30,6 +31,7 @@ except ImportError as e:
     )
     from utility import (
         load_spellchecker,
+        get_stopwords,
         file_folder,
         text_folder,
         strings,
@@ -38,7 +40,7 @@ except ImportError as e:
 '''
 //Discuss category
 
-Check words per line in wordlists and prompt error
+//Check words per line in wordlists and prompt error
 
 Add a list of language specific stopwords to the discard category and mention
 this to the user in the manual specifically
@@ -62,7 +64,7 @@ class DocumentAnalyzer(tk.Tk):
         self.geometry('800x800')
         self.notebook = ttk.Notebook(self)
         self.font_size = 12
-        self.max_words_per_line = 2
+        self.max_words_per_line = 1
 
         style = ttk.Style()
         style.configure('WORD.TLabel', foreground='red')
@@ -237,6 +239,7 @@ class DocumentAnalyzer(tk.Tk):
         from popup windows.
         '''
         self.folder = join('.', self.project_name)
+
         mkdir(self.folder)
         mkdir(join(self.folder, file_folder))
         mkdir(join(self.folder, text_folder))
@@ -256,7 +259,12 @@ class DocumentAnalyzer(tk.Tk):
                 # Create the category / wordlist files
                 catfile_path = join(self.folder, f'{catname}.txt')
                 with open(catfile_path, 'w') as catfile:
-                    pass
+                    # Put stopwords into the discard category
+                    if catname == 'discard':
+                        for stopword in get_stopwords(self.language):
+                            catfile.write(f'{stopword}\n')
+                    else:
+                        pass
 
         # Create file history file
         filehistory_path = join(self.folder, 'filehistory.txt')
@@ -566,28 +574,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-    '''
-    # Time normal loading
-    t0 = time()
-    spell1 = load_spellchecker('Dutch', None)
-    print(f'Loaded the spellchecker normally in {time()-t0}')
-
-    # Prepare for using pickle
-    t0 = time()
-    import pickle
-    with open('datafile', 'wb') as file:
-        pickle.dump(spell1, file)
-    print(f'Wrote the spellchecker to file using pickle in {time()-t0}')
-
-    # Time pickle loading
-    t0 = time()
-    with open('datafile', 'rb') as file:
-        spell2 = pickle.load(file)
-    print(f'Loaded the spellchecker using pickle in {time()-t0}')
-
-    # Show off skills
-    from symspellpy.symspellpy import Verbosity
-    print([w.term for w in spell1.lookup('danke', Verbosity.ALL)[:10]])
-    print([w.term for w in spell2.lookup('danke', Verbosity.ALL)[:10]])
-    '''
