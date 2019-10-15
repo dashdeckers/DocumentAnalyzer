@@ -4,6 +4,8 @@ import tkinter.ttk as ttk
 from tkinter.font import Font
 from tkinter import messagebox as msg
 
+from os.path import exists
+
 try:
     from DocumentAnalyzer.utility import (
         language_dict,
@@ -73,7 +75,11 @@ class CreateProject(tk.Toplevel):
             self.master.language = language
             self.master.n_cats = int(self.catnum_entry.get())
             self.destroy()
-            SetCategoryNames(self.master)
+
+            if exists(self.master.project_name):
+                msg.showerror('Project folder exists', 'Folder already exists')
+            else:
+                SetCategoryNames(self.master)
 
     def valid_name(self):
         '''Checks that the project name is valid. A project name can only
