@@ -62,6 +62,7 @@ class DocumentAnalyzer(tk.Tk):
         self.geometry('800x800')
         self.notebook = ttk.Notebook(self)
         self.font_size = 12
+        self.max_words_per_line = 2
 
         style = ttk.Style()
         style.configure('WORD.TLabel', foreground='red')
@@ -373,19 +374,32 @@ class DocumentAnalyzer(tk.Tk):
                 catfile_path = join(folder, catname + '.txt')
 
                 with open(catfile_path, 'r') as file:
-                    catfile_contents = file.read().splitlines()
-                    combined = self.categories[catname] + catfile_contents
-                    # TODO: Use a set here, and then write to file in alph. order
-                    no_duplicates = list()
-                    for word in combined:
-                        if word not in no_duplicates:
-                            no_duplicates.append(word)
+                    # Read lines and strip any leading or trailing whitespace
+                    stripped = map(str.strip, file.read().splitlines())
+                    combined = list(stripped) + self.categories[catname]
+                    # Remove blank lines, duplicates, and lowercase everything
+                    final = set(map(str.lower, filter(bool, combined)))
+
+                    # If there are too many words per line, prompt a warning
+                    collected_warnings = list()
+                    for line in final:
+                        if len(line.split()) > self.max_words_per_line:
+                            collected_warnings.append(line)
+                    if collected_warnings:
+                        msg.showerror('Wordlist warning',
+                            strings['max_words_wordlist_warning'](
+                                self.max_words_per_line,
+                                collected_warnings
+                            )
+                        )
 
                 with open(catfile_path, 'w') as file:
-                    for word in no_duplicates:
+                    for word in sorted(final):
                         file.write(word + '\n')
 
-                self.categories[catname] = no_duplicates
+                # Ignore lines that exceed the max_words_per_line limit
+                filtered = [l for l in final if l not in collected_warnings]
+                self.categories[catname] = filtered
 
         except FileNotFoundError as e:
             msg.showerror('Category file error', 

@@ -326,6 +326,11 @@ strings = {
         '''the text?'''
     ),
 
+    'max_words_wordlist_warning' : lambda max_words, entries: (
+        f'''The following entries have more than {max_words} words per '''
+        f'''line: {[e for e in entries]}. They will be ignored!'''
+    ),
+
     'default_text' : (
         '''Open or create a project via the menu to get started '''
     ),
