@@ -36,62 +36,19 @@ except ImportError as e:
     )
 
 '''
-/Use Europarl corpus for better and smaller language files.
+//Discuss category
 
-/More context (5 per side).
-
-
-###
-Results:
-
-First collect a frequency dictionary (word, freq) for each file, then:
-Create one big excel file for each wordlist.
-
-Each excel has words as rows and filenames as columns.
-How often word X occurs in file Y: Check position (X, Y)
-How often word X occurs across all files (= wordlist freq): sum up row X
-###
-
-
-###
-Check out this article:
-http://www.bitforestinfo.com/2017/05/how-to-create-find-findall-replace-and-replaceall-function-in-tkinter-text-widget-python-magicstick-text-editor.html
-
-We want to be able to find a string (ask via popup), and then highlight all
-occurrances of that string. Show somewhere how many occurrances you found.
-We also want to be able to delete all occurrances of that string, so the popup
-asking the user for the string should have the options:
-- Find
-- Delete
-- Cancel
-
-Use tk.text.see(index) to scroll the text until the user can see that index.
-Maybe show the first occurrance.
-
-Map the shortcut to Control+f and name it something like find/delete.
-When adding the menu items, update the update_menu function in main and while
-you are at it, check for this bug:
-Bug: Grayed out menu items sometimes? Especially edit? (Next doc!)
-###
-
-
-Grayscale images and compare performance?
+Check words per line in wordlists and prompt error
 
 Add a list of language specific stopwords to the discard category and mention
 this to the user in the manual specifically
 
+Add word to dictionary and persist
 
-###
-Manual Headers to explain:
-# Uploading
-# Conversion
-# Assigning to cat
-# Importing wordlists from another proj
-# Running analysis results
-# Description of results file
+bigram/trigram detection
 
-Remind people to re-run the analysis for new results
-###
+
+? Grayscale images and compare performance?
 '''
 
 

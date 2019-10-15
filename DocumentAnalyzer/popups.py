@@ -155,9 +155,10 @@ class SetCategoryNames(tk.Toplevel):
         for i in range(self.master.n_cats):
             self.master.categories[self.entries[i].get()] = list()
 
-        # Always make an extra discard category
+        # Always make an extra discard and discuss categories
         self.master.categories['discard'] = list()
-        self.master.n_cats += 1
+        self.master.categories['discuss'] = list()
+        self.master.n_cats += 2
 
         self.destroy()
         self.master.create_new_project()
