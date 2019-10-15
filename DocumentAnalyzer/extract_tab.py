@@ -84,8 +84,7 @@ class ExtractTab(tk.Frame):
             # Don't do anything if we have already extracted the correct text.
             # We don't want to replace current spell-correction progress.
             if not self.filename_var.get() == self.master.files_todo[0]:
-                path_to_text = join('.',
-                                    self.master.project_name,
+                path_to_text = join(self.master.folder,
                                     file_folder,
                                     self.master.files_todo[0])
                 text = text_extracter(path_to_text)
@@ -133,8 +132,7 @@ class ExtractTab(tk.Frame):
         if self.master.project_currently_open() and self.master.files_todo:
             text = self.extract_text.get('1.0', 'end')
             filename = splitext(self.filename_var.get())[0] + '.txt'
-            path_to_text = join('.',
-                                self.master.project_name,
+            path_to_text = join(self.master.folder,
                                 text_folder,
                                 filename)
             with open(path_to_text, 'w') as file:
@@ -143,7 +141,7 @@ class ExtractTab(tk.Frame):
             self.master.files_done.append(self.master.files_todo[0])
             del self.master.files_todo[0]
 
-            self.master.sync_filehistory()
+            self.master.sync_filehistory(self.master.folder)
 
         self.refresh_extract()
         return 'break'

@@ -1,48 +1,113 @@
 # Document Analyzer
 
-## Getting started
+## Installation
 
-### Installation
+1. Download the file "DocumentAnalyzer_Installer.msi" and then run it on your computer to start the installation. Be aware that it might take a few minutes to load depending on your computer.
 
-1. Download the file "DocumentAnalyzer_Installer.msi" and then run it on your computer to start the installation. Be aware that it might take a few minutes to load depending on your computer, this is due to the large language files necessary to do the spellchecking.
+2. Agree to the the terms and conditions.
 
-2. Agree to the the terms and conditions and optionally choose to create a desktop shortcut.
-
-3. Important! When asked to choose a destination folder, pick a folder that you are familiar with because you will need to access it quite often. This is the folder in which your results will appear, and to which you will need to copy/move the pdf files that you wish to analyze.
+3. Important! When asked to choose a destination folder, pick a folder that you are familiar with because you will need to access it quite often. This is the folder in which your results will appear, and to which you will need to copy/move the PDF files that you wish to analyze.
 
 4. Click install and wait for the installation to finish. The program, as well as the uninstall file, will now be located in the folder you specified.
 
-### Usage
+## Usage
+
+### Creating a project
 
 1. Open your file explorer and navigate to the folder you specified during the installation.
 
-2. Open the program by double-clicking on it and create a new project using the drop down menu "Project". Be aware that the program might take a few minutes to open, depending on your computer.
+2. Open the program by double-clicking on it (keep in mind that it might take a while to open) and then click on the drop down menu "Project".
 
-3. In the pop-up window, provide the name of the project and choose a language from the drop down menu. This is the language that you expect the pdf files to be in, and the spellchecker will be set to that language for this project. Then, specify how many wordlists / categories you want your project to have and click "Create Project".
+3. Click on "Create new project".
 
-4. In the next pop-up window, give each wordlist / category a name and click "Done".
+3. In the pop-up window, provide:
+	- the name of the project,
+	- the project language (this is the language that you expect the pdf files to be in), and
+	- the number of categories (= wordlists) you want to have.
+	Then click "Create Project".
 
-5. In the file explorer, you will notice that a new folder with the name of your project has appeared. Open that folder and copy the pdf files you wish to analyze into the folder names "PDF_Files".
+4. In the next pop-up window, give each category a name and then click "Done".
 
-6. In the program, synchronize the project using the drop down menu "Project", or use the keyboard shortcut "Ctrl + s". You should now see the attempted transcription of the first pdf file. Be aware that there will likely be many mistakes, unfortunately this cannot be avoided. 
+5. In the file explorer, you will notice that a new folder with the name of your project has been created. That folder is your new project! We will call this your project folder from now on.
 
-7. You can now edit this text file until it is correct. The spellchecker can help you do this, if you click on a red underlined word and then on one of the corrections it will replace that word. Once you are satisfied with the transcription, save the text and open the next pdf using the drop-down menu "Edit" or the keyboard shortcut "Ctrl + n".
+### Opening an existing project
 
-8. When you are done extracting the text from your pdf files, you can click on the "Classify" tab to assign words to categories. In this tab, you will see a word highlighted in red, and the context in which it is in. Assign the highlighted word to one of the available categories by clicking on the name of the category, or by clicking on the corresponding number on the keyboard. Once a word has been assigned to a category, every subsequent occurance of the word will be skipped. 
-(If you want to assign a word to two categories, you have to do that manually: Open the category file in the project folder, type in the word, save the file and refresh the project. See the 'Project Files' section under 'More Details' for more information).
+1. Open your file explorer and navigate to the folder you specified during the installation.
 
-9. Don't forget to synchronize the project using the drop-down menu "Project", or the keyboard shortcut "Ctrl + s", to save your progress to the files in the project folder! This also updates the program to any changes made to those files directly (for example by adding a word to a category manually, as described in step 8).
+2. Open the program by double-clicking on it (keep in mind that it might take a while to open) and then click on the drop down menu "Project".
 
-10. Use the tabs "Results" and "View Data" to see the word counts for each category and the words assigned to each category, respectively. Synchronizing your project will also write the newest results to the results.txt file which you can find in the project folder.
+3. Click on "Open existing project".
+
+4. In the pop-up window, select the project folder you want to open.
+
+### Importing PDF files
+
+1. Open your file explorer and navigate to the project folder you want to import PDF files to.
+
+2. Move or copy all the PDF files into the folder called "PDF_Files".
+
+3. If the program was open during this time, then refresh it now by:
+	- using the shortcut 'Control + s', or by
+	- clicking the 'Synchronize current project' option in the 'Project' menu.
+
+4. You should now see, in the text area, the programs attempt at transcribing the first PDF.
+
+5. If you don't, close the program and open the file named 'filehistory.txt'. If every PDF file you have imported is listed in this file, then the program will think that you are done! Simply delete any (or every) of the PDF filenames from this file, then save it and re-open the program.
+
+### Working on a project
+
+1. Open or create a project as described above. 
+
+2. Imported some PDF files and make sure you see some transcribed text (also described above).
+
+3. Edit this text until you are satisfied with the transcription, do this by:
+	- editing the text directly, as you would a Word document,
+	- using the spellchecker by clicking on a red-underlined word and then clicking on a suggested correction, and
+	- using the 'Find and delete' option in the 'Edit' menu.
+
+4. When you are done, save the text and transcribe the next PDF file, either by:
+	- using the shortcut 'Control + n', or by
+	- clicking on the 'Save & next document' option in the 'Edit' menu.
+	You can view (and edit) these transcriptions in the Text_Files folder.
+
+5. After you have finished transcribing the PDF files (or at any point beforehand), click on the 'Classify' tab.
+
+6. Now assign each word to a category by clicking on the corresponding buttons or number keys on your keyboard. If you want to assign a word to two or more categories then assign it to one of the categories as described just now, then open the .txt file of the other category in your project folder and simply add the word to that list manually.
+
+7. Important! Save your progress by:
+	- using the shortcut 'Control + s', or by
+	- clicking the 'Synchronize current project' option in the 'Project' menu.
+	The PDF transcriptions are saved everytime you move to the next one (as described in step 4.), but the assigning of words to categories is only saved when you manually synchronize the project as described in this step.
+
+### Getting the results
+
+1. While working on a project (as described in above), every time you synchronize the project (manually, or by pressing 'Control + s') the most recent results are computed and saved.
+
+2. For each category, you will find a corresponding CSV (= Excel) file in the project folder.
+
+3. Open one of these CSV files and you will find the results in the following format:
+	- Each row contains the frequencies of one of the words in that category.
+	- Each column contains the frequencies of one of the PDF files.
+	- Each cell contains the frequency of that particular word in that particular file.
+
+4. To find out how often a word has occurred in total (across all PDFs), calculate the sum of the cells in that row.
+
+5. To find out, across all PDFs, how often words of a certain category occur, sum all of the cells of that category.
+
+6. Important! Everytime you make a change to a wordlist, be sure to synchronize the project ('Control + s') to update the results.
+
+### Importing wordlists
+
+1. Navigate to the project folder of the project you want to update the wordlist of.
+
+2. Open the category file corresponding to the wordlist you want to update. It will have a '.txt' extention, not '.csv'.
+
+3. Copy the contents of your wordlist into this text file.
+
+4. Important! You can edit this file as you please as long as there is only one word per line.
 
 
 ## More Details
-
-### Create a project
-Select the 'Create new project' option the 'Project' menu and specify the project name, language and number of categories (=wordlists). Then, specify the names of each of the categories.
-
-### Open an existing project
-Select the 'Open existing project' option in the 'Project' menu, then select a valid project folder. Note that project folders must be in the same directory as the program!
 
 ### Saving the project
 To save the project, select 'Synchronize current project' from the 'Project' menu. Synchronizing the project is a two way street, it combines what is contained in the files of the project folder and what is in the memory of the program. So synchronizing acts as both updating the program's knowledge from the contents of the files AND saving the program's knowledge to the files.
@@ -55,20 +120,14 @@ However it is not possible to, for example, remove a word from a category by del
 ### The 'Extract Text' tab
 This tab handles extracting text from the documents one by one, and editing them. Punctuation is removed in the extraction process, and all characters lowercased.\
 \
-Because extracting text from .pdf files is error-prone, the text is immediately spell-checked and errors are highlighted. Clicking a spelling error will show a menu with some corrections, and clicking one of the corrections will replace the word, but the text can also be directly edited. The spell check can be re-run by selecting the 'Spellcheck' option in the 'Edit' menu.\
+Because extracting text from .pdf files is error-prone, the text is immediately spell-checked and errors are highlighted. Clicking a spelling error will show a menu with some corrections, and clicking one of the corrections will replace the word, but the text can also be directly edited.\
 \
-To save the text, select the 'Save & next document' option in the same menu. This will save the text as a .txt file in the 'Text_Files' folder under the same filename as the original file. The text can also be re-extracted to act as a reset in case of any severe mistakes by selecting 'Redo current document' in the 'Edit' menu.
+To save the text, select the 'Save & next document' option in the same menu. This will save the text as a .txt file in the 'Text_Files' folder under the same filename as the original file. The text can also be re-extracted to act as a reset in case of any severe mistakes by selecting 'Redo current document' in the 'Edit' menu. If, after saving the text, you want to go back and edit it again you have two options: Either close the program, remove the filename of the file to edit from 'filehistory.txt' and then open the program again, or close the program and then edit the corresponding text file in the Text_Files folder using a different text editor.
 
 ### The 'Classify' tab
 In this tab, words can be classified into one of the available categories either by clicking on the corresponding button or by pressing the corresponding number key. The words are shown in red, in the context that they appear in. The previous word and its context are shown above the current word and its context.\
 \
 Each word is classified only once, if the word should be in two or more categories then that must be done by adding the word to the category file manually.
-
-### The 'Results' tab
-This tab shows the results, which are computed everytime the tab is opened. It goes through each word in all of the .txt files in the 'Text_Files' folder and then for each category, if that word appears in that category it increases the count for that category.
-
-### The 'View Data' tab
-Here, the internal data can be viewed. Select a category or the 'File History' to see the what the contents of the selection, based on the internal program data. After synchronizing the project, those contents will be identical to the file contents.
 
 ## Project files
 
@@ -88,10 +147,13 @@ Project_folder
 │
 │   project_info.txt
 │   filehistory.txt
-|   results.txt
 │   category1.txt
 │   category2.txt
 │   category3.txt
+│   ...
+│   category1.csv
+│   category2.csv
+│   category3.csv
 │   ...
 ```
 The folder named 'PDF_Files' contains all the documents that you wish to analyze. The program currently supports .pdf and .txt file types.\
@@ -101,6 +163,13 @@ The folder named 'Text_files' will contain the text extracted from these documen
 The file 'project_info.txt' contains some information about the project such as the name, language, number of categories and the names of those categories.\
 \
 The file 'filehistory.txt' contains a list of file names that have already been extracted, so that the program knows that they can be skipped.\
+\
+The 'categoryX.txt' files contain lists of words that belong to each of those categories.\
+\
+The 'categoryX.csv' files each contain an excel spreedsheet with the results for that category in the following format:
+- each column represents one of the filenames
+- each row represents one of the words in the wordlist
+- each cell contains the number of occurrences for that word in that file\
 \
 These files can be edited, as long as they follow the rules listed below. After editing a file or adding or removing files from the 'PDF_Files' folders, the program needs to synchronize to see those changes. This is done by selecting the 'Synchronize current project' option in the 'Project' menu.
 

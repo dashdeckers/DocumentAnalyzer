@@ -75,6 +75,7 @@ class DocumentAnalyzer(tk.Tk):
         self.project_name = None
         self.language = None
         self.n_cats = None
+        self.folder = None
 
         # Tabs
         self.extract = ExtractTab(self)
@@ -157,6 +158,7 @@ class DocumentAnalyzer(tk.Tk):
         self.project_name = None
         self.language = None
         self.n_cats = None
+        self.folder = None
 
         self.extract.filename_var.set('')
         self.extract.filenumber_var.set('')
@@ -233,12 +235,13 @@ class DocumentAnalyzer(tk.Tk):
         '''Creates a new project from internal data from user input obtained
         from popup windows.
         '''
-        mkdir(join('.', self.project_name))
-        mkdir(join('.', self.project_name, file_folder))
-        mkdir(join('.', self.project_name, text_folder))
+        self.folder = join('.', self.project_name)
+        mkdir(self.folder)
+        mkdir(join(self.folder, file_folder))
+        mkdir(join(self.folder, text_folder))
         
         # Create project info file
-        project_info_path = join('.', self.project_name, 'project_info.txt')
+        project_info_path = join(self.folder, 'project_info.txt')
         with open(project_info_path, 'w') as file:
             file.write(
                 f'Project_name: {self.project_name}\n'
@@ -250,12 +253,12 @@ class DocumentAnalyzer(tk.Tk):
                 file.write(f'Category_{catnum+1}_name: {catname}\n')
 
                 # Create the category / wordlist files
-                catfile_path = join('.', self.project_name, f'{catname}.txt')
+                catfile_path = join(self.folder, f'{catname}.txt')
                 with open(catfile_path, 'w') as catfile:
                     pass
 
         # Create file history file
-        filehistory_path = join('.', self.project_name, 'filehistory.txt')
+        filehistory_path = join(self.folder, 'filehistory.txt')
         with open(filehistory_path, 'w') as file:
             pass
 
@@ -332,8 +335,9 @@ class DocumentAnalyzer(tk.Tk):
             return 'break'
 
         self.clear_current_project()
+        self.folder = folder
 
-        if self.parse_project_info_file(folder):
+        if self.parse_project_info_file(self.folder):
             t0 = time()
             self.spell = load_spellchecker(self.language, self.spellcheckers)
             print(f'Loaded the spellchecker in {time()-t0}')
@@ -352,21 +356,21 @@ class DocumentAnalyzer(tk.Tk):
         category wordlists, and writing the results to file.
         '''
         if self.project_currently_open():
-            self.sync_wordlists()
-            self.sync_filehistory()
-            self.sync_files()
-            self.write_results()
+            self.sync_wordlists(self.folder)
+            self.sync_filehistory(self.folder)
+            self.sync_files(self.folder)
+            self.write_results(self.folder)
 
         return 'break'
 
-    def sync_wordlists(self):
+    def sync_wordlists(self, folder):
         '''Synchronizes the wordlists such that the category files contain
         the combined elements of the internal wordlists (self.categories) 
         and the category files, not allowing duplicates.
         '''
         try:
             for catname in list(self.categories.keys()):
-                catfile_path = join('.', self.project_name, catname + '.txt')
+                catfile_path = join(folder, catname + '.txt')
 
                 with open(catfile_path, 'r') as file:
                     catfile_contents = file.read().splitlines()
@@ -391,12 +395,12 @@ class DocumentAnalyzer(tk.Tk):
             msg.showerror('Unknown Error',
                 strings['broken_pipe_err'])
 
-    def sync_filehistory(self):
+    def sync_filehistory(self, folder):
         '''Adds the filenames present in self.files_done, and not already 
         present in filehistory.txt, to filehistory.txt.
         '''
         try:
-            filehistory_path = join('.', self.project_name, 'filehistory.txt')
+            filehistory_path = join(folder, 'filehistory.txt')
 
             with open(filehistory_path, 'r') as file:
                 fh = file.read().splitlines()
@@ -412,7 +416,7 @@ class DocumentAnalyzer(tk.Tk):
             msg.showerror('Filehistory file error',
                 strings['filehistory_missing'](e))
 
-    def sync_files(self):
+    def sync_files(self, folder):
         '''Synchronises the files in the project folder (file_folder)
         and filehistory.txt with the internal lists self.files_done and 
         self.files_todo. The list of files present in the folder and NOT 
@@ -426,7 +430,7 @@ class DocumentAnalyzer(tk.Tk):
         '''
         try:
             valid_extension = ('.pdf', '.txt', '.doc')
-            f_dir = join('.', self.project_name, file_folder)
+            f_dir = join(folder, file_folder)
 
             files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))]
             valid_files = list()
@@ -437,7 +441,7 @@ class DocumentAnalyzer(tk.Tk):
                 else:
                     invalid_files.append(file)
 
-            filehistory_path = join('.', self.project_name, 'filehistory.txt')
+            filehistory_path = join(folder, 'filehistory.txt')
             with open(filehistory_path, 'r') as file:
                 filehistory = file.read().splitlines()
 
@@ -459,7 +463,7 @@ class DocumentAnalyzer(tk.Tk):
             msg.showerror('Filehistory file error',
                 strings['filehistory_missing'](e))
 
-    def calculate_frequency_dictionaries(self):
+    def calculate_frequency_dictionaries(self, folder):
         '''Calculate the frequencies: For each document, create a frequency
         dictionary which counts the frequencies of each word in each document.
         '''
@@ -467,7 +471,7 @@ class DocumentAnalyzer(tk.Tk):
             return
 
         # Get the list of filenames from the text files folder
-        f_dir = join('.', self.project_name, text_folder)
+        f_dir = join(folder, text_folder)
         files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))
                                             and f.endswith('.txt')]
 
@@ -492,13 +496,13 @@ class DocumentAnalyzer(tk.Tk):
 
         return all_fdicts
 
-    def write_results(self):
+    def write_results(self, folder):
         '''Writes the results to files: For each wordlist, create a csv text
         file containing the words in that wordlist as rows and the filenames
         as columns so that we have one table for each wordlist and each table
         containing the frequencies of each word in each document.
         '''
-        all_fdicts = self.calculate_frequency_dictionaries()
+        all_fdicts = self.calculate_frequency_dictionaries(folder)
         if all_fdicts is None:
             return
 
@@ -527,8 +531,7 @@ class DocumentAnalyzer(tk.Tk):
                         csv_data[row_idx][col_idx] = fdict[word]
 
             # Write the CSV to file
-            results_path = join('.', self.project_name)
-            with open(join(results_path, f'{catname}.csv'), 'w') as res_file:
+            with open(join(folder, f'{catname}.csv'), 'w') as res_file:
                 writer = csv.writer(res_file)
                 writer.writerows(csv_data)
 
@@ -538,7 +541,10 @@ class DocumentAnalyzer(tk.Tk):
         **Returns**:
         True if there is a project open.
         '''
-        return self.project_name and self.n_cats and self.language
+        return (self.project_name 
+                and self.n_cats 
+                and self.language 
+                and self.folder)
 
 def main():
     App = DocumentAnalyzer()
