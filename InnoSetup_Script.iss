@@ -35,7 +35,7 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "C:\Users\Travis Hammond\Document-Histograms\DocumentAnalyzer.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Travis Hammond\Document-Histograms\dist\DocumentAnalyzer.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
