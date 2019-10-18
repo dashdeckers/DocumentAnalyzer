@@ -1,10 +1,10 @@
-# Document Analyzer
+# Document Analyzer - User Manual
 
 ## Installation
 
 1. Download the file "DocumentAnalyzer_Installer.msi" and then run it on your computer to start the installation. Be aware that it might take a few minutes to load depending on your computer.
 
-2. Agree to the the terms and conditions.
+2. Agree to the terms and conditions.
 
 3. Important! When asked to choose a destination folder, pick a folder that you are familiar with because you will need to access it quite often. This is the folder in which your results will appear, and to which you will need to copy/move the PDF files that you wish to analyze.
 
@@ -14,25 +14,29 @@
 
 ### Creating a project
 
-1. Open your file explorer and navigate to the folder you specified during the installation.
+1. Open your Windows file explorer and navigate to the folder you specified during the installation.
 
 2. Open the program by double-clicking on it (keep in mind that it might take a while to open) and then click on the drop down menu "Project".
 
 3. Click on "Create new project".
 
-3. In the pop-up window, provide:
+4. In the pop-up window, provide:
 	- the name of the project,
 	- the project language (this is the language that you expect the pdf files to be in), and
 	- the number of categories (= wordlists) you want to have.
 	Then click "Create Project".
 
-4. In the next pop-up window, give each category a name and then click "Done".
+5. In the next pop-up window, give each category a name and then click "Done".
 
-5. In the file explorer, you will notice that a new folder with the name of your project has been created. That folder is your new project! We will call this your project folder from now on.
+6. In the file explorer, you will notice that a new folder with the name of your project has been created. That folder is your new project! We will call this your project folder from now on.
+
+This folder contains a document for each of the categories you have created. These documents contain the words you assign to each category when you work on the project. The document “Project info” contains information on the project. The document “filehistory” is used by the program to make a record of the documents you have analysed in the project. See for more information below under Project Files.
+Also, the folder contains two sub folders, one for the PDF files you will be analysing during the project, one for the converted Text files.
+
 
 ### Opening an existing project
 
-1. Open your file explorer and navigate to the folder you specified during the installation.
+1. Open your Windows file explorer and navigate to the folder you specified during the installation.
 
 2. Open the program by double-clicking on it (keep in mind that it might take a while to open) and then click on the drop down menu "Project".
 
@@ -42,7 +46,7 @@
 
 ### Importing PDF files
 
-1. Open your file explorer and navigate to the project folder you want to import PDF files to.
+1. Open your Windows file explorer and navigate to the project folder you want to import PDF files to.
 
 2. Move or copy all the PDF files into the folder called "PDF_Files".
 
@@ -50,15 +54,32 @@
 	- using the shortcut 'Control + s', or by
 	- clicking the 'Synchronize current project' option in the 'Project' menu.
 
-4. You should now see, in the text area, the programs attempt at transcribing the first PDF.
+4. You should now see, in the text area, the program's attempt at transcribing the first PDF.
 
 5. If you don't, close the program and open the file named 'filehistory.txt'. If every PDF file you have imported is listed in this file, then the program will think that you are done! Simply delete any (or every) of the PDF filenames from this file, then save it and re-open the program.
 
 ### Working on a project
 
+In essence, working on a project requires three steps:
+
+1. Transcribing PDF files to TEXT
+	The program automatically transcribes PDF files to TEXT files. In doing so, it uses the standard word list of the language you have selected for the project. However, many mistakes in the transcription are bound to occur. 
+Headers, page numbers and other formatting are removed from the text. 
+The text files need to be checked before words can be classified. This is what the program prompts you to do first.
+
+2. Assigning words to the categories
+	After all the transcriptions of the PDF files have been checked, you can the words assign words to the categories. For automated assigning of words, you can import word lists to the documents for each category.
+
+3. Results
+	After all words have been assigned, the program will calculate the results. If you make changes to the word lists, the results need to be recalculated.
+
+These steps are detailed below
+
+### Correcting the text transcription and classifying words
+
 1. Open or create a project as described above. 
 
-2. Imported some PDF files and make sure you see some transcribed text (also described above).
+2. Import some PDF files and make sure you see some transcribed text (also described above).
 
 3. Edit this text until you are satisfied with the transcription, do this by:
 	- editing the text directly, as you would a Word document,
@@ -70,18 +91,22 @@
 	- clicking on the 'Save & next document' option in the 'Edit' menu.
 	You can view (and edit) these transcriptions in the Text_Files folder.
 
-5. After you have finished transcribing the PDF files (or at any point beforehand), click on the 'Classify' tab.
+5. It is advised to open the PDF file in a window next to the program window. This way you can check the text document against the PDF file and remove redundant headers and footers if the program has not done this correctly. If not removed, the words in headers and footers will be classified and impact on the outcomes of the research. 
 
-6. Now assign each word to a category by clicking on the corresponding buttons or number keys on your keyboard. If you want to assign a word to two or more categories then assign it to one of the categories as described just now, then open the .txt file of the other category in your project folder and simply add the word to that list manually.
+6. After you have finished transcribing the PDF files (or at any point beforehand), click on the 'Classify' tab.
 
-7. Important! Save your progress by:
+Now assign each word to a category by clicking on the corresponding buttons or number keys on your keyboard. If you want to assign a word to two or more categories then assign it to one of the categories as described just now, then open the .txt file of the other category in your project folder and simply add the word to that list manually.
+
+All words in the text files need to be assigned to a category. Words that are irrelevant for the research (e.g. verbs to be and have or stop words) need to be manually assigned to the ‘discard’ category the program automatically creates. Words that are difficult to assign can be temporarily stored in the category ‘discuss’. The words in this category can later be assigned to the correct category (or added to the ‘discard’ category.
+
+Important! Save your progress by:
 	- using the shortcut 'Control + s', or by
 	- clicking the 'Synchronize current project' option in the 'Project' menu.
-	The PDF transcriptions are saved everytime you move to the next one (as described in step 4.), but the assigning of words to categories is only saved when you manually synchronize the project as described in this step.
+	The PDF transcriptions are saved every time you move to the next one (as described in step 4 above), but the **assigning of words to categories is only saved when you manually synchronize the project as described in this step.**
 
 ### Getting the results
 
-1. While working on a project (as described in above), every time you synchronize the project (manually, or by pressing 'Control + s') the most recent results are computed and saved.
+1. While working on a project (as described above), every time you synchronize the project (manually, or by pressing 'Control + s') the most recent results are computed and saved.
 
 2. For each category, you will find a corresponding CSV (= Excel) file in the project folder.
 
@@ -98,9 +123,11 @@
 
 ### Importing wordlists
 
+The program creates word lists for each category in your project (plus the discard and discuss categories). You can import word list from another project to your current project by copy-pasting the words of each category into the appropriate category file in your new project as described below. Also, the word lists can be edited manually by typing words.
+
 1. Navigate to the project folder of the project you want to update the wordlist of.
 
-2. Open the category file corresponding to the wordlist you want to update. It will have a '.txt' extention, not '.csv'.
+2. Open the category file corresponding to the wordlist you want to update. It will have a '.txt' extension, not '.csv'.
 
 3. Copy the contents of your wordlist into this text file.
 
