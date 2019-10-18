@@ -8,6 +8,7 @@ try:
     from DocumentAnalyzer.symspellpy.symspellpy import Verbosity
     from DocumentAnalyzer.utility import (
         CustomText,
+        add_to_dict_file,
         text_extracter, 
         clean_text,
         file_folder,
@@ -18,6 +19,7 @@ except ImportError as e:
     from symspellpy.symspellpy import Verbosity
     from utility import (
         CustomText,
+        add_to_dict_file,
         text_extracter, 
         clean_text,
         file_folder,
@@ -193,11 +195,13 @@ class ExtractTab(tk.Frame):
             # Get the possible corrections and add them to the menu
             self.corrections_menu = tk.Menu(self, tearoff=0)
             corrections = self.get_corrections(word)
-            for word in corrections:
-                callback = partial(self.replace_word, word=word, index=index)
-                self.corrections_menu.add_command(label=word, command=callback)
+            for cword in corrections:
+                callback = partial(self.replace_word, word=cword, index=index)
+                self.corrections_menu.add_command(label=cword, command=callback)
 
-            # Put the menu where it belongs and bind the relevant keys
+            # Add the 'add to dict' option and put the menu where it belongs
+            callback = partial(self.add_to_dict, word=word)
+            self.corrections_menu.add_command(label='Add to dictionary', command=callback)
             x, y = self.winfo_pointerx(), self.winfo_pointery() + int(self.master.font_size / 2)
             self.corrections_menu.post(x, y)
 
@@ -208,6 +212,13 @@ class ExtractTab(tk.Frame):
             self.corrections_menu.destroy()
         except AttributeError:
             pass
+
+    def add_to_dict(self, word):
+        '''Adds a word to the dictionary
+        '''
+        add_to_dict_file(word, self.master.folder)
+        self.master.spell.create_dictionary_entry(word, 1)
+        self.spellcheck()
 
     def replace_word(self, word, index):
         '''Replace the word at the index with the given word.

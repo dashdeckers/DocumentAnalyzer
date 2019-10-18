@@ -6,7 +6,7 @@ from PyPDF2 import PdfFileReader
 from tkinter.ttk import Label
 from tkinter import Text, IntVar
 from os import environ
-from os.path import abspath, join
+from os.path import abspath, join, exists
 
 try:
     from DocumentAnalyzer.symspellpy.symspellpy import SymSpell
@@ -263,6 +263,32 @@ def load_spellchecker(language, spellcheckers):
 
         except FileNotFoundError:
             pass
+
+def add_dict_file_to_spellchecker(spell, folder):
+    '''Adds words from a dictionary file to the spellchecker.
+    Assumes a single word per line, ignores anything else.
+    '''
+    path_to_dict = join(folder, 'dictionary.txt')
+    if exists(path_to_dict):
+        with open(path_to_dict, 'r') as file:
+            for line in file.readlines():
+                if line == '\n':
+                    print('skipping empty line')
+                else:
+                    word = line.split()[0]
+                    spell.create_dictionary_entry(word, 1)
+
+def add_to_dict_file(word, folder):
+    '''Adds a word to the dictionary file.
+    '''
+    path_to_dict = join(folder, 'dictionary.txt')
+    if not exists(path_to_dict):
+        write_mode = 'w'
+    else:
+        write_mode = 'a'
+
+    with open(path_to_dict, write_mode) as file:
+        file.write('\n' + word)
 
 def get_context(tokens=None, word=None, context_range=2, show_all=False):
     '''Get the context of the first (or all) occurrence of a

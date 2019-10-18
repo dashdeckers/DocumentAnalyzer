@@ -16,6 +16,7 @@ try:
         FindDelete,
     )
     from DocumentAnalyzer.utility import (
+        add_dict_file_to_spellchecker,
         load_spellchecker,
         get_stopwords,
         file_folder,
@@ -30,6 +31,7 @@ except ImportError as e:
         FindDelete,
     )
     from utility import (
+        add_dict_file_to_spellchecker,
         load_spellchecker,
         get_stopwords,
         file_folder,
@@ -42,10 +44,10 @@ except ImportError as e:
 
 //Check words per line in wordlists and prompt error
 
-Add a list of language specific stopwords to the discard category and mention
-this to the user in the manual specifically
+//Add a list of language specific stopwords to the discard category
+and mention this to the user in the manual specifically
 
-Add word to dictionary and persist
+//Add word to dictionary and persist
 
 bigram/trigram detection
 
@@ -274,6 +276,7 @@ class DocumentAnalyzer(tk.Tk):
         self.refresh_settings()
         t0 = time()
         self.spell = load_spellchecker(self.language, self.spellcheckers)
+        add_dict_file_to_spellchecker(self.spell, self.folder)
         print(f'Loaded the spellchecker in {time()-t0}')
         self.title(self.project_name)
         self.classify.refresh_classify()
@@ -349,6 +352,7 @@ class DocumentAnalyzer(tk.Tk):
         if self.parse_project_info_file(self.folder):
             t0 = time()
             self.spell = load_spellchecker(self.language, self.spellcheckers)
+            add_dict_file_to_spellchecker(self.spell, self.folder)
             print(f'Loaded the spellchecker in {time()-t0}')
             self.sync_project()
             self.title(self.project_name)
