@@ -360,6 +360,9 @@ def get_stopwords(language):
         except FileNotFoundError:
             pass
 
+        except KeyError:
+            return []
+
 strings = {
     'save_reminder' : lambda e: (
         f'''Do you want to {e.lower()}? Make sure to save the project '''
