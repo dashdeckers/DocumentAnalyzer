@@ -40,17 +40,17 @@ except ImportError as e:
     )
 
 '''
-//Discuss category
+//filename should be indicated
 
-//Check words per line in wordlists and prompt error
+//spellcheck on backspace
 
-//Add a list of language specific stopwords to the discard category
-and mention this to the user in the manual specifically
+//write text file on sync
 
-//Add word to dictionary and persist
+//combined wordlist
 
-bigram/trigram detection
+deploy
 
+? bigram/trigram detection
 
 ? Grayscale images and compare performance?
 '''
@@ -81,6 +81,7 @@ class DocumentAnalyzer(tk.Tk):
         self.language = None
         self.n_cats = None
         self.folder = None
+        self.wordlist_warned = False
 
         # Tabs
         self.extract = ExtractTab(self)
@@ -164,6 +165,7 @@ class DocumentAnalyzer(tk.Tk):
         self.language = None
         self.n_cats = None
         self.folder = None
+        self.wordlist_warned = False
 
         self.extract.filename_var.set('')
         self.extract.filenumber_var.set('')
@@ -274,6 +276,11 @@ class DocumentAnalyzer(tk.Tk):
         with open(filehistory_path, 'w') as file:
             pass
 
+        # Create all words file
+        all_words_path = join(self.folder, 'all_words.txt')
+        with open(all_words_path, 'w') as file:
+            pass
+
         self.refresh_settings()
         t0 = time()
         self.spell = load_spellchecker(self.language, self.spellcheckers)
@@ -382,9 +389,12 @@ class DocumentAnalyzer(tk.Tk):
     def sync_wordlists(self, folder):
         '''Synchronizes the wordlists such that the category files contain
         the combined elements of the internal wordlists (self.categories) 
-        and the category files, not allowing duplicates.
+        and the category files, not allowing duplicates. Also writes all
+        category words to a combined file.
         '''
         try:
+            all_words = list()
+
             for catname in list(self.categories.keys()):
                 catfile_path = join(folder, catname + '.txt')
 
@@ -400,7 +410,8 @@ class DocumentAnalyzer(tk.Tk):
                     for line in final:
                         if len(line.split()) > self.max_words_per_line:
                             collected_warnings.append(line)
-                    if collected_warnings:
+                    if collected_warnings and not self.wordlist_warned:
+                        self.wordlist_warned = True
                         msg.showerror('Wordlist warning',
                             strings['max_words_wordlist_warning'](
                                 self.max_words_per_line,
@@ -408,13 +419,25 @@ class DocumentAnalyzer(tk.Tk):
                             )
                         )
 
+                # Write wordlist alphabetically
                 with open(catfile_path, 'w') as file:
                     for word in sorted(final):
                         file.write(word + '\n')
 
+                # Collect a list of all words
+                all_words.append(f'==={catname}===')
+                all_words.extend(final)
+                all_words.append('\n')
+
                 # Ignore lines that exceed the max_words_per_line limit
                 filtered = [l for l in final if l not in collected_warnings]
                 self.categories[catname] = filtered
+
+            # Write all words to file
+            all_words_path = join(folder, 'all_words.txt')
+            with open(all_words_path, 'w') as all_words_file:
+                for word in all_words:
+                    all_words_file.write(word + '\n')
 
         except FileNotFoundError as e:
             msg.showerror('Category file error', 

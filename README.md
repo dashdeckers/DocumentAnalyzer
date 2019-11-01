@@ -172,6 +172,7 @@ Project_folder
 │   │   document2.txt
 │   │   ...
 │
+│   all_words.txt
 │   project_info.txt
 │   filehistory.txt
 │   category1.txt
@@ -186,6 +187,8 @@ Project_folder
 The folder named 'PDF_Files' contains all the documents that you wish to analyze. The program currently supports .pdf and .txt file types.\
 \
 The folder named 'Text_files' will contain the text extracted from these documents in plain text (.txt) files, with the same file names as the original documents.\
+\
+The file 'all_words.txt' contains all the words from each wordlist, for convenience when looking up the location/existence of a word across wordlists.\
 \
 The file 'project_info.txt' contains some information about the project such as the name, language, number of categories and the names of those categories.\
 \
