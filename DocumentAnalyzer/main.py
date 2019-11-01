@@ -367,13 +367,15 @@ class DocumentAnalyzer(tk.Tk):
 
     def sync_project(self, event=None):
         '''Synchronize the project by synchronizing wordlists, filehistory,
-        category wordlists, and writing the results to file.
+        category wordlists, writing the results to file and saving the current
+        text file.
         '''
         if self.project_currently_open():
             self.sync_wordlists(self.folder)
             self.sync_filehistory(self.folder)
             self.sync_files(self.folder)
             self.write_results(self.folder)
+            self.extract.save_file()
 
         return 'break'
 

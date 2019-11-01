@@ -126,10 +126,24 @@ class ExtractTab(tk.Frame):
             self.filenumber_var.set('')
 
     def next_file(self, event=None):
-        '''Saves the text currently in the text field in the text_folder of
-        the project using the same filename, and then replace the text with
+        '''Saves the text currently in the text field, then replaces it with
         the extracted text of the next file (or with the default text if there
         is no next file).
+        '''
+        if self.master.project_currently_open() and self.master.files_todo:
+            self.save_file()
+
+            self.master.files_done.append(self.master.files_todo[0])
+            del self.master.files_todo[0]
+
+            self.master.sync_filehistory(self.master.folder)
+
+        self.refresh_extract()
+        return 'break'
+
+    def save_file(self):
+        '''Saves the text currently in the text field in the text_folder of
+        the project using the same filename.
         '''
         if self.master.project_currently_open() and self.master.files_todo:
             text = self.extract_text.get('1.0', 'end')
@@ -139,14 +153,6 @@ class ExtractTab(tk.Frame):
                                 filename)
             with open(path_to_text, 'w') as file:
                 file.write(text)
-
-            self.master.files_done.append(self.master.files_todo[0])
-            del self.master.files_todo[0]
-
-            self.master.sync_filehistory(self.master.folder)
-
-        self.refresh_extract()
-        return 'break'
 
     def reparse(self):
         '''Discard the text currently in the text field and replace it with
