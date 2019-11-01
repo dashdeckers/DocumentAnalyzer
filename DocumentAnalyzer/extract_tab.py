@@ -264,7 +264,7 @@ class ExtractTab(tk.Frame):
         bar is pressed.
         '''
         self.extract_text.edit_separator()
-        self.spellcheck()
+        self.after(10, self.spellcheck)
 
     def find(self, string, event=None):
         '''Highlights all occurrences of the string and centers the view around

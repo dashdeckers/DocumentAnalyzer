@@ -193,6 +193,7 @@ class DocumentAnalyzer(tk.Tk):
         self.bind_all('<FocusOut>', self.extract.hide_corrections)
         self.bind_all('<Any-KeyPress>', self.extract.hide_corrections)
 
+        self.extract.extract_text.bind('<BackSpace>', self.extract.on_space_press)
         self.extract.extract_text.bind('<space>', self.extract.on_space_press)
         self.extract.extract_text.bind('<Control-f>', self.find_delete)
         self.extract.extract_text.bind('<Control-z>', self.extract.undo)
