@@ -551,44 +551,22 @@ class DocumentAnalyzer(tk.Tk):
 
                 joined_bg = ' '.join(bigram)
                 if len(bigram) > 1 and joined_bg in all_words:
-                    print(f'Match: "{joined_bg}"')
+                    # If the bigram matches, only count the bigram
+                    self.increment_frequency(joined_bg, file, CSV_collection)
 
-                    # If the bigram matches, only check for the bigram and
-                    # not the component words
-                    for catname, csv_tuple in CSV_collection.items():
-                        matrix, rows, cols = csv_tuple
-
-                        if joined_bg in rows:
-                            matrix[rows[joined_bg]][cols[file]] += 1
-
-                    # Ignore the rest of the ngram by denying the next if
+                    # Ignore the rest of the ngram by denying the elif
                     # statement for a certain number of iterations.
                     timer = (n - step) + 1
 
                 elif timer <= 0:
-                    # Otherwise, for each word, increment the count in the
-                    # CSV matrix of each category that contains that word.
-                    #for word in [w for w in bigram if w not in ignore_words]:
-                    word = bigram[0]
-                    print(f'Match: "{word}"')
-
-                    for catname, csv_tuple in CSV_collection.items():
-                        matrix, rows, cols = csv_tuple
-
-                        if word in rows:
-                            matrix[rows[word]][cols[file]] += 1
+                    # If the bigram didn't match, just count the first word
+                    self.increment_frequency(bigram[0], file, CSV_collection)
 
                 timer -= 1
 
-            # Finally, do the rest of the words in the last bigram
+            # Finally, count the rest of the words in the last bigram
             for word in bigram[1:]:
-                print(f'Match: "{word}"')
-                # Should find a way to not repeat myself 3 times here
-                for catname, csv_tuple in CSV_collection.items():
-                    matrix, rows, cols = csv_tuple
-
-                    if word in rows:
-                        matrix[rows[word]][cols[file]] += 1
+                self.increment_frequency(word, file, CSV_collection)
 
         # Write the CSVs to files
         for catname, csv_tuple in CSV_collection.items():
@@ -596,6 +574,17 @@ class DocumentAnalyzer(tk.Tk):
             with open(join(folder, f'{catname}.csv'), 'w') as res_file:
                 writer = csv.writer(res_file)
                 writer.writerows(csv_data)
+
+    def increment_frequency(self, word, file, CSV_collection):
+        ''' Increments the count of a word in the CSV_collection.
+        '''
+        print(f'Match: "{word}"')
+
+        for catname, csv_tuple in CSV_collection.items():
+            matrix, rows, cols = csv_tuple
+
+            if word in rows:
+                matrix[rows[word]][cols[file]] += 1
 
     def get_ngrams(self, tokens, n, step=1, get_rest=False):
         ''' Returns the ngrams as expected. 
