@@ -39,22 +39,6 @@ except ImportError as e:
         strings,
     )
 
-'''
-//filename should be indicated
-
-//spellcheck on backspace
-
-//write text file on sync
-
-//combined wordlist
-
-deploy
-
-? bigram/trigram detection
-
-? Grayscale images and compare performance?
-'''
-
 
 class DocumentAnalyzer(tk.Tk):
     '''
@@ -66,7 +50,7 @@ class DocumentAnalyzer(tk.Tk):
         self.geometry('800x800')
         self.notebook = ttk.Notebook(self)
         self.font_size = 12
-        self.max_words_per_line = 1
+        self.max_words_per_line = 2
 
         style = ttk.Style()
         style.configure('WORD.TLabel', foreground='red')
@@ -515,77 +499,146 @@ class DocumentAnalyzer(tk.Tk):
             msg.showerror('Filehistory file error',
                 strings['filehistory_missing'](e))
 
-    def calculate_frequency_dictionaries(self, folder):
-        '''Calculate the frequencies: For each document, create a frequency
-        dictionary which counts the frequencies of each word in each document.
+    def write_results(self, folder):
+        '''Writes the results to files: For each wordlist, create a csv text
+        file containing the words in that wordlist as rows and the filenames
+        as columns so that we have one table for each wordlist and each table
+        containing the frequencies of each word in each document.
+
+        If a bigram is counted, don't count any of it's component words.
         '''
-        if not self.project_currently_open():
-            return
+
+        # ngram variables
+        n = self.max_words_per_line
+        step = 1
 
         # Get the list of filenames from the text files folder
         f_dir = join(folder, text_folder)
         files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))
                                             and f.endswith('.txt')]
 
-        if not files:
-            # TODO: Should overwrite the csv file with a blank to be consistent
-            return
-
-        # Make a word frequency dictionary for each file
-        all_fdicts = dict.fromkeys(files)
-        for file in files:
-
-            fdict = dict()
-            with open(join(f_dir, file), 'r') as text_file:
-                text_tokens = text_file.read().split()
-                for word in text_tokens:
-                    if word in fdict:
-                        fdict[word] += 1
-                    else:
-                        fdict[word] = 1
-
-            all_fdicts[file] = fdict
-
-        return all_fdicts
-
-    def write_results(self, folder):
-        '''Writes the results to files: For each wordlist, create a csv text
-        file containing the words in that wordlist as rows and the filenames
-        as columns so that we have one table for each wordlist and each table
-        containing the frequencies of each word in each document.
-        '''
-        all_fdicts = self.calculate_frequency_dictionaries(folder)
-        if all_fdicts is None:
-            return
-
-        # Each filename gets a column, this is the same across wordlists
-        num_cols = len(all_fdicts)
-        col_names = ['---'] + list(all_fdicts.keys())
-
-        # Each wordlist gets its own file
+        # Initialize a matrix for each category to later write as CSV
+        all_words = set()
+        CSV_collection = dict()
         for catname in list(self.categories.keys()):
-
-            # Each word in the wordlist gets a row
-            num_rows = len(self.categories[catname])
+            col_names = ['---'] + files
             row_names = self.categories[catname]
 
+            # Keep a set of all words for reference
+            all_words.update(row_names)
+
             # CSV data is a matrix with filenames as cols and words as rows
-            csv_data = [ [row_names[row]] + [0] * num_cols 
-                                 for row in range(num_rows) ]
+            csv_data = [ [row_names[row]] + [0] * (len(col_names) - 1) 
+                                 for row in range(len(row_names)) ]
             csv_data.insert(0, col_names)
 
-            # Fill in the matrix
-            for word in self.categories[catname]:
-                for filename, fdict in all_fdicts.items():
-                    row_idx = row_names.index(word) + 1
-                    col_idx = col_names.index(filename)
-                    if word in fdict:
-                        csv_data[row_idx][col_idx] = fdict[word]
+            # We want the matrix and the index mappings at hand per cat
+            rows = {w:idx for w,idx in zip(row_names, range(1, len(row_names)+1))}
+            cols = {f:idx for f,idx in zip(col_names, range(len(col_names)))}
+            CSV_collection[catname] = (csv_data, rows, cols)
 
-            # Write the CSV to file
+        # Iterate over text files
+        for file in files:
+            with open(join(f_dir, file), 'r') as text_file:
+                tokens = text_file.read().split()
+
+            # Use a timer/counter to variably deny entry to the elif
+            timer = 0
+
+            # Iterate over each word/bigram in the text file
+            for bigram in self.get_ngrams(tokens, n=n, step=step, get_rest=True):
+                print('The bigram:', bigram)
+
+                joined_bg = ' '.join(bigram)
+                if len(bigram) > 1 and joined_bg in all_words:
+                    print(f'Match: "{joined_bg}"')
+
+                    # If the bigram matches, only check for the bigram and
+                    # not the component words
+                    for catname, csv_tuple in CSV_collection.items():
+                        matrix, rows, cols = csv_tuple
+
+                        if joined_bg in rows:
+                            matrix[rows[joined_bg]][cols[file]] += 1
+
+                    # Ignore the rest of the ngram by denying the next if
+                    # statement for a certain number of iterations.
+                    timer = (n - step) + 1
+
+                elif timer <= 0:
+                    # Otherwise, for each word, increment the count in the
+                    # CSV matrix of each category that contains that word.
+                    #for word in [w for w in bigram if w not in ignore_words]:
+                    word = bigram[0]
+                    print(f'Match: "{word}"')
+
+                    for catname, csv_tuple in CSV_collection.items():
+                        matrix, rows, cols = csv_tuple
+
+                        if word in rows:
+                            matrix[rows[word]][cols[file]] += 1
+
+                timer -= 1
+
+            # Finally, do the rest of the words in the last bigram
+            for word in bigram[1:]:
+                print(f'Match: "{word}"')
+                # Should find a way to not repeat myself 3 times here
+                for catname, csv_tuple in CSV_collection.items():
+                    matrix, rows, cols = csv_tuple
+
+                    if word in rows:
+                        matrix[rows[word]][cols[file]] += 1
+
+        # Write the CSVs to files
+        for catname, csv_tuple in CSV_collection.items():
+            csv_data, _, _ = csv_tuple
             with open(join(folder, f'{catname}.csv'), 'w') as res_file:
                 writer = csv.writer(res_file)
                 writer.writerows(csv_data)
+
+    def get_ngrams(self, tokens, n, step=1, get_rest=False):
+        ''' Returns the ngrams as expected. 
+
+        If get_rest is set to True, then it also yields the the last n-1
+        words, making it easy to parse ngrams and single words in a
+        single pass. For example:
+
+        S = 'the quick brown fox'
+        for ngram in get_ngrams(S.split(), 3, get_rest=True):
+            print(ngram)
+
+        result:
+        ['the', 'quick', 'brown']
+        ['quick', 'brown', 'fox']
+        ['brown']
+        ['fox']
+
+        If skip is larger than 0, then it skips over some bigrams,
+        for example:
+
+        for ngram in get_ngrams(S.split(), 3, step=2):
+            print(ngram)
+
+        result:
+        ['the', 'quick', 'brown']
+        ['brown', 'fox', 'jumped']
+        ['jumped', 'over', 'the']
+        ['the', 'lazy', 'dog']
+
+        '''
+        n_steps = len(tokens) - n + 1
+        # Correct the upper limit to the range by dividing by step and
+        # rounding up (making use of the // operator rounding down and
+        # flipping the sign twice)
+        n_steps = -( -n_steps // step)
+
+        for i in range(0, n_steps):
+            yield tokens[ i*step : i*step+n ]
+
+        if get_rest:
+            for rest in tokens[ (n_steps-1)*step+n : ]:
+                yield [rest]
 
     def project_currently_open(self):
         '''Checks if a project is currently open.
