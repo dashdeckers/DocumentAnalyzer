@@ -465,33 +465,29 @@ class DocumentAnalyzer(tk.Tk):
         with an invalid extension will be shown to the user.
         '''
         try:
-            valid_extension = ('.pdf', '.txt', '.doc')
+            valid_ext = ('.pdf', '.txt')
             f_dir = join(folder, file_folder)
+            all_files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))]
 
-            files = [f for f in listdir(f_dir) if isfile(join(f_dir, f))]
-            valid_files = list()
-            invalid_files = list()
-            for file in files:
-                if file.endswith(valid_extension):
-                    valid_files.append(file)
-                else:
-                    invalid_files.append(file)
+            valid = list()
+            invalid = list()
+            for file in all_files:
+                (valid if file.endswith(valid_ext) else invalid).append(file)
 
-            filehistory_path = join(folder, 'filehistory.txt')
-            with open(filehistory_path, 'r') as file:
-                filehistory = file.read().splitlines()
+            with open(join(folder, 'filehistory.txt'), 'r') as filehist_file:
+                filehistory = filehist_file.read().splitlines()
 
-            self.files_done = [f for f in valid_files if f in filehistory]
-            self.files_todo = [f for f in valid_files if f not in filehistory]
+            self.files_done = [f for f in valid if f in filehistory]
+            self.files_todo = [f for f in valid if f not in filehistory]
 
             inconsistencies = [f for f in filehistory 
                                     if f not in self.files_done]
             if inconsistencies:
                 msg.showerror('Filehistory error',
                     strings['filehist_inconsistency'](inconsistencies))
-            if invalid_files:
+            if invalid:
                 msg.showerror('Invalid extension',
-                    strings['invalid_extension'](invalid_files))
+                    strings['invalid_extension'](invalid))
 
             self.extract.refresh_extract()
 
@@ -547,7 +543,7 @@ class DocumentAnalyzer(tk.Tk):
 
             # Iterate over each word/bigram in the text file
             for bigram in self.get_ngrams(tokens, n=n, step=step, get_rest=True):
-                print('The bigram:', bigram)
+                # print('The bigram:', bigram)
 
                 joined_bg = ' '.join(bigram)
                 if len(bigram) > 1 and joined_bg in all_words:
@@ -578,7 +574,7 @@ class DocumentAnalyzer(tk.Tk):
     def increment_frequency(self, word, file, CSV_collection):
         ''' Increments the count of a word in the CSV_collection.
         '''
-        print(f'Match: "{word}"')
+        # print(f'Match: "{word}"')
 
         for catname, csv_tuple in CSV_collection.items():
             matrix, rows, cols = csv_tuple

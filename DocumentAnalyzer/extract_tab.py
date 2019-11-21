@@ -72,7 +72,7 @@ class ExtractTab(tk.Frame):
         self.scrollbar.pack(side='right', fill='y')
         self.extract_text.pack(side='top', fill='both', expand=1)
 
-    def refresh_extract(self):
+    def refresh_extract(self, override_pdf_extract=False):
         '''Sets the text in the textfield to either the default text or to the
         text extracted from the first file in the self.master.files_todo list
         if that list is not empty and a project is currently open. If text was
@@ -85,11 +85,27 @@ class ExtractTab(tk.Frame):
             self.extract_text.configure(state='normal')
             # Don't do anything if we have already extracted the correct text.
             # We don't want to replace current spell-correction progress.
+            print(f'Filename: {self.filename_var.get()}, other filename: {self.master.files_todo[0]}')
             if not self.filename_var.get() == self.master.files_todo[0]:
-                path_to_text = join(self.master.folder,
-                                    file_folder,
-                                    self.master.files_todo[0])
-                text = text_extracter(path_to_text)
+                # Try getting the text from a text file first, if it exists
+                try:
+                    assert not override_pdf_extract
+                    bare_filename = splitext(self.master.files_todo[0])[0]
+                    path_to_text = join(self.master.folder,
+                                        text_folder,
+                                        bare_filename + '.txt')
+                    with open(path_to_text, 'r') as text_file:
+                        text = text_file.read()
+                    print('Extracted text file')
+
+                # Otherwise extract the text from the pdf file
+                except (FileNotFoundError, AssertionError):
+                    path_to_text = join(self.master.folder,
+                                        file_folder,
+                                        self.master.files_todo[0])
+                    text = text_extracter(path_to_text)
+                    print('Extracted pdf file')
+
                 text = clean_text(text)
                 self.extract_text.delete('1.0', 'end')
                 self.extract_text.insert('1.0', text)
@@ -160,7 +176,7 @@ class ExtractTab(tk.Frame):
         confirmation.
         '''
         self.filename_var.set('')
-        self.refresh_extract()
+        self.refresh_extract(override_pdf_extract=True)
 
     def get_corrections(self, word):
         '''Get a list of correction suggestions for the word.
